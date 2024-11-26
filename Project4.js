@@ -19,6 +19,7 @@ var bottom = -2.0;
 
 var modelViewMatrix, projectionMatrix;
 var modelViewMatrixLoc, projectionMatrixLoc;
+var modelViewStack = [];
 const at = vec3(0.0, 0.0, 0.0);
 const up = vec3(0.0, 1.0, 0.0);
 
@@ -26,15 +27,27 @@ var modelView, projection;
 var viewerPos;
 var flag = true;
 
+var lightPosition = vec4(0, 1, 9, 0 );
+
+var lightAmbient = vec4(0.2, 0.2, 0.2, 1.0 );
+var lightDiffuse = vec4(.8, 0.8, 0.8, 1.0 );
+var lightSpecular = vec4( .8, .8, .8, 1.0 );
+
+var materialAmbient = vec4( .2, .2, .2, 1.0 );
+var materialDiffuse = vec4( 0.0, 0.5, 1, 1.0);
+var materialSpecular = vec4( 0, 0, 1, 1.0 );
+var materialShininess = 50.0;
+
 var pointsArray = [];
 var colorsArray = [];
+var normalsArray = [];
 
 var numWallPoints = 0; // Number of points for the wall
 var numLightPostPoints = 0; // Number of points for the light post
 var currentIndex = 0; // Used to track objects in the points and colors arrays
 
 // Vertex positions for a cube (brick)
-var vertices = [
+var v = [
     // Brick vertices (Brick wall)
     vec4(-0.5, -0.5,  0.5, 1.0), // 0
     vec4(-0.5,  0.5,  0.5, 1.0), // 1
@@ -60,26 +73,26 @@ var colors = [
     vec4(0.15, 0.4, 0.15, 1.0) // Dark Green 9
 ];
 
-// Function to create triangles for a quad
-function quad(a, b, c, d, colorIndex) {
-    pointsArray.push(vertices[a]);
-    colorsArray.push(colors[colorIndex]);
+// // Function to create triangles for a quad
+// function quad(a, b, c, d, colorIndex) {
+//     pointsArray.push(vertices[a]);
+//     colorsArray.push(colors[colorIndex]);
 
-    pointsArray.push(vertices[b]);
-    colorsArray.push(colors[colorIndex]);
+//     pointsArray.push(vertices[b]);
+//     colorsArray.push(colors[colorIndex]);
 
-    pointsArray.push(vertices[c]);
-    colorsArray.push(colors[colorIndex]);
+//     pointsArray.push(vertices[c]);
+//     colorsArray.push(colors[colorIndex]);
 
-    pointsArray.push(vertices[a]);
-    colorsArray.push(colors[colorIndex]);
+//     pointsArray.push(vertices[a]);
+//     colorsArray.push(colors[colorIndex]);
 
-    pointsArray.push(vertices[c]);
-    colorsArray.push(colors[colorIndex]);
+//     pointsArray.push(vertices[c]);
+//     colorsArray.push(colors[colorIndex]);
 
-    pointsArray.push(vertices[d]);
-    colorsArray.push(colors[colorIndex]);
-}
+//     pointsArray.push(vertices[d]);
+//     colorsArray.push(colors[colorIndex]);
+// }
 
 function cylinder(numSlices, radius, height) {
     // Create the cylinder
@@ -344,31 +357,31 @@ function Draw() {
 
 function DrawWall() {
     // Draw each brick (gray color)
-    quad(1, 0, 3, 2, 6); // Front face of the brick
-    quad(2, 3, 7, 6, 7); // Right face
-    quad(3, 0, 4, 7, 8); // Bottom face
-    quad(6, 5, 1, 2, 8); // Top face
-    quad(4, 5, 6, 7, 6); // Back face
-    quad(5, 4, 0, 1, 7); // Left face
+    quad(v[1], v[0], v[3], v[2], v[6]); // Front face of the brick
+    quad(v[2], v[3], v[7], v[6], v[7]); // Right face
+    quad(v[3], v[0], v[4], v[7], v[8]); // Bottom face
+    quad(v[6], v[5], v[1], v[2], v[8]); // Top face
+    quad(v[4], v[5], v[6], v[7], v[6]); // Back face
+    quad(v[5], v[4], v[0], v[1], v[7]); // Left face
     // Add green between bricks
-    quad(1, 0, 3, 2, 9); // Front face
-    quad(2, 3, 7, 6, 9); // Right face
-    quad(3, 0, 4, 7, 9); // Bottom face
-    quad(6, 5, 1, 2, 9); // Top face
-    quad(4, 5, 6, 7, 9); // Back face
-    quad(5, 4, 0, 1, 9); // Left face
+    quad(v[1], v[0], v[3], v[2], v[9]); // Front face
+    quad(v[2], v[3], v[7], v[6], v[9]); // Right face
+    quad(v[3], v[0], v[4], v[7], v[9]); // Bottom face
+    quad(v[6], v[5], v[1], v[2], v[9]); // Top face
+    quad(v[4], v[5], v[6], v[7], v[9]); // Back face
+    quad(v[5], v[4], v[0], v[1], v[9]); // Left face
 
     numWallPoints = 72; // 36 vertices for the bricks, 36 for the green bricks
 }
 
 function DrawLightPost() {
     // Draw the base of the light post
-    quad(1, 0, 3, 2, 6); // Front face
-    quad(2, 3, 7, 6, 7); // Right face
-    quad(3, 0, 4, 7, 8); // Bottom face
-    quad(6, 5, 1, 2, 8); // Top face
-    quad(4, 5, 6, 7, 6); // Back face
-    quad(5, 4, 0, 1, 7); // Left face
+    quad(v[1], v[0], v[3], v[2], v[6]); // Front face
+    quad(v[2], v[3], v[7], v[6], v[7]); // Right face
+    quad(v[3], v[0], v[4], v[7], v[8]); // Bottom face
+    quad(v[6], v[5], v[1], v[2], v[8]); // Top face
+    quad(v[4], v[5], v[6], v[7], v[6]); // Back face
+    quad(v[5], v[4], v[0], v[1], v[7]); // Left face
 
     // Draw the post (gray color)
     cylinder(100, 0.3, 7.0); // numSlices, radius, height
@@ -425,6 +438,9 @@ window.onload = function init() {
     gl.useProgram( program );
 
     Draw();
+    makeCubePoints();
+    makeCarPoints();
+    extrudedCircle();
 
     var vBuffer = gl.createBuffer();
     gl.bindBuffer( gl.ARRAY_BUFFER, vBuffer);
@@ -503,6 +519,11 @@ function RenderWall(rows, cols, brickWidth, brickHeight, xPosition, yPosition, z
     let yOffset = yPosition; // Center vertically   
 
     // Rendering the gray bricks
+
+    materialDiffuse = vec4(0.2, 0.2, 0.2, 1.0); // changing color to dark grey
+    materialShiness=0; // making brick less reflective
+    SetupLightingMaterial();  // apply changes
+
     for (var row = 0; row < rows; row++) {
         for (var col = 0; col < cols; col++) {
             // Apply transformations: translation and scaling
@@ -525,6 +546,10 @@ function RenderWall(rows, cols, brickWidth, brickHeight, xPosition, yPosition, z
     currentIndex += 36;
 
     // Rendering the hedge bricks
+
+    materialDiffuse = vec4(0.15, 0.4, 0.15, 1.0);
+    SetupLightingMaterial();
+
     xOffset = xPosition + ((cols * brickWidth) / 2) - 0.32; // Start hedge bricks at the same position as the gray bricks
     yOffset = yPosition + 0.01; // Slight offset for hedge bricks
     for (var row = 0; row < rows + 2; row++) {
@@ -554,21 +579,32 @@ function RenderLightPost() {
     gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(lightPostModelViewMatrix));
 
     // Draw the light post (this assumes you have already set the color for the light post)
+    materialDiffuse = colors[8];
+    SetupLightingMaterial();
     gl.drawArrays(gl.TRIANGLES, currentIndex, 36); // 36 vertices for a cube
     currentIndex += 36;
 
     // Draw the post (gray color)
+    materialDiffuse = colors[7];
+    SetupLightingMaterial();
     gl.drawArrays(gl.TRIANGLES, currentIndex, 1200);
     currentIndex += 1200; // Move past the light post
 
     // Draw the lamp (yellow colored sphere)
+    materialDiffuse = colors[3];
+    SetupLightingMaterial();
     gl.drawArrays(gl.TRIANGLES, currentIndex, 3750);
     currentIndex += 3750; // Move past the lamp
 
     // Draw the banner arm (dark gray color)
+    materialDiffuse = colors[8];
+    SetupLightingMaterial();
     gl.drawArrays(gl.TRIANGLES, currentIndex, 36); // 36 vertices for a adjustable rectangle
     currentIndex += 36; // Move past the adjustable rectangle
+
     // Draw the banner arm underside
+    materialDiffuse = colors[0];
+    SetupLightingMaterial();
     gl.drawArrays(gl.TRIANGLES, currentIndex, 1200); // vertices for a curve
     currentIndex += 1200; // Move past the curve
     gl.drawArrays(gl.TRIANGLES, currentIndex, 1200); // vertices for a curve
@@ -600,11 +636,20 @@ function render() {
 
     gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(modelViewMatrix));
     gl.uniformMatrix4fv(projectionMatrixLoc, false, flatten(projectionMatrix));
-
+    
     // Objects to be rendered
+    modelViewStack.push(modelViewMatrix);
+
     RenderWall(10, 15, 0.65, 0.35, 3, 0, 0, 0.3); // #rows, #cols, brickWidth, brickHeight, xPosition, yPosition, zPosition, scale
     RenderLightPost();
 
+    // modelViewMatrix = modelViewStack.pop();
+    // modelViewStack.push(modelViewMatrix);
+
+    drawVendingMachine([-3, 0, 2], [0, 0, 1, 0], [4, 4, 4]);
+    drawCar([5, 0.5, 5], [90, 0, 1, 0], [3, 3, 3]);
+
+    modelViewMatrix = modelViewStack.pop();
 
     //requestAnimationFrame(render);
 
@@ -620,4 +665,41 @@ function scale4(a, b, c) {
    result[1][1] = b;
    result[2][2] = c;
    return result;
+}
+
+function SetupLightingMaterial()
+{
+    // set up lighting and material
+    ambientProduct = mult(lightAmbient, materialAmbient);
+    diffuseProduct = mult(lightDiffuse, materialDiffuse);
+    specularProduct = mult(lightSpecular, materialSpecular);
+
+	// send lighting and material coefficient products to GPU
+    gl.uniform4fv( gl.getUniformLocation(program, "ambientProduct"),flatten(ambientProduct) );
+    gl.uniform4fv( gl.getUniformLocation(program, "diffuseProduct"),flatten(diffuseProduct) );
+    gl.uniform4fv( gl.getUniformLocation(program, "specularProduct"),flatten(specularProduct) );
+    gl.uniform4fv( gl.getUniformLocation(program, "lightPosition"),flatten(lightPosition) );
+    gl.uniform1f( gl.getUniformLocation(program, "shininess"),materialShininess );
+}
+
+function Newell(vertices)
+{
+   var L=vertices.length;
+   var x=0, y=0, z=0;
+   var index, nextIndex;
+
+   for (var i=0; i<L; i++)
+   {
+       index=i;
+       nextIndex = (i+1)%L;
+
+       x += (vertices[index][1] - vertices[nextIndex][1])*
+            (vertices[index][2] + vertices[nextIndex][2]);
+       y += (vertices[index][2] - vertices[nextIndex][2])*
+            (vertices[index][0] + vertices[nextIndex][0]);
+       z += (vertices[index][0] - vertices[nextIndex][0])*
+            (vertices[index][1] + vertices[nextIndex][1]);
+   }
+
+   return (normalize(vec3(x, y, z)));
 }
