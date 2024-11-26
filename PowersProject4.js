@@ -27,7 +27,8 @@ var modelView, projection;
 var viewerPos;
 var flag = true;
 
-var lightPosition = vec4(0, 1, 9, 0 );
+var lightPosition = vec4(-5, -5, 0, 9 );
+// var lightPosition = vec4(0, 1, 9, 0 );
 
 var lightAmbient = vec4(0.2, 0.2, 0.2, 1.0 );
 var lightDiffuse = vec4(.8, 0.8, 0.8, 1.0 );
@@ -347,8 +348,6 @@ function curve90Degrees(radius, width, thickness, smoothness, xOffset, yOffset, 
 
 }
 
-
-
 // Function to draw a mesh, including bricks and grout
 function Draw() {
     DrawWall();
@@ -441,6 +440,7 @@ window.onload = function init() {
     makeCubePoints();
     makeCarPoints();
     extrudedCircle();
+    SurfaceRevPoints();
 
     var vBuffer = gl.createBuffer();
     gl.bindBuffer( gl.ARRAY_BUFFER, vBuffer);
@@ -641,13 +641,18 @@ function render() {
     modelViewStack.push(modelViewMatrix);
 
     RenderWall(10, 15, 0.65, 0.35, 3, 0, 0, 0.3); // #rows, #cols, brickWidth, brickHeight, xPosition, yPosition, zPosition, scale
-    RenderLightPost();
 
-    // modelViewMatrix = modelViewStack.pop();
-    // modelViewStack.push(modelViewMatrix);
+    modelViewStack.push(); // save mvm
+    modelViewMatrix = mult(modelViewMatrix, translate(0, 0, -2)) // move lamp post
+    RenderLightPost();
+    modelViewMatrix = modelViewStack.pop(); // restore mvm
 
     drawVendingMachine([-3, 0, 2], [0, 0, 1, 0], [4, 4, 4]);
-    drawCar([5, 0.5, 5], [90, 0, 1, 0], [3, 3, 3]);
+    drawCar([10, 0.5, 5], [90, 0, 1, 0], [3, 3, 3]);
+
+    materialDiffuse = vec4(1, 165/255, 0, 1);
+    SetupLightingMaterial();
+    drawSurfaceRevolution([3, 0, 3], [0, 0, 1, 0], [2, 2, 2]);
 
     modelViewMatrix = modelViewStack.pop();
 

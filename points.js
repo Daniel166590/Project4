@@ -137,38 +137,41 @@ function extrudedCircle() {
     console.log(circle_points);
 }
 
-function makeConePoints() {
-    v = [
-        vec4(1, 0, 0, 1),
-        vec4(1, 1, 0, 1)
+//Sets up the vertices array so the pawn can be drawn
+var rev_points
+function SurfaceRevPoints()
+{
+	let v = [
+        [.1, 1, 0, 1],
+        [.5, 0, 0, 1],
     ];
 
-	// //Setup initial points matrix
-	// for (var i = 0; i<25; i++)
-	// {
-    //     vertices.push(vec4(v[i][0], v[i][1], v[i][2], 1));
-	// }
+	let radius, rotate_count = 6;
+    let angle_increment = Math.PI / rotate_count;
+    let point_count = v.length;
 
-	var r;
-    var t=Math.PI/12;
+    let rot_points = [...v];
 
-    // sweep the original curve another "angle" degree
-    for (var j = 0; j < 24; j++) {
-        var angle = (j+1)*t;
-
-        // for each sweeping step, generate 25 new points corresponding to the original points
-        for(var i = 0; i < 25 ; i++ )
-        {
-            r = vertices[i][0];
-            vertices.push(vec4(r*Math.cos(angle), vertices[i][1], -r*Math.sin(angle), 1));
+    // take points and rotate them
+    for(let i = 0; i < rotate_count * 2; i++) {
+        let angle = (i + 1) * angle_increment; // how much to rotate point
+        
+        // make new rotated points
+        for(let j = 0; j < point_count; j++) {
+            radius = v[j][0]                       // radius == the x val of current point
+            let x = radius * Math.cos(angle);
+            let y = v[j][1];
+            let z = radius * Math.sin(angle);
+            rot_points.push(vec4(x, y, z, 1));
         }
     }
 
-    var N=25;
-    // quad strips are formed slice by slice (not layer by layer)
-    for (var i=0; i<24; i++) { // slices
-        for (var j=0; j<24; j++) { // layers
-                quad(i*N+j, (i+1)*N+j, (i+1)*N+(j+1), i*N+(j+1));
-        }
+    let face_count = 15;
+    let tmp = 23;
+    let a, b, c, d;
+    for(let i = 0; i < tmp; i++) {
+        tri(rot_points[i], rot_points[i + 1], rot_points[i + 2]);
+        tri(rot_points[i + 1], rot_points[i + 2], rot_points[i + 3]);
     }
+    rev_points = 6 * tmp;
 }

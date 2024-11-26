@@ -98,7 +98,7 @@ function drawCar(t = [0, 0, 0], r = [0, 0, 1, 0], s = [1, 1, 1]) {
     gl.uniformMatrix4fv( projectionMatrixLoc, false, flatten(projectionMatrix) );
 
 	gl.drawArrays( gl.TRIANGLES, currentIndex, 63);
-    currentIndex += 63;
+    currentIndex += 63; // push points for car body
 
     materialAmbient = vec4( .2, .2, .2, 1.0 );
     materialDiffuse = vec4( 12/255, 12/255, 12/255, 1.0);
@@ -110,6 +110,9 @@ function drawCar(t = [0, 0, 0], r = [0, 0, 1, 0], s = [1, 1, 1]) {
         drawCircle([-.5, 0, (-i+.875)], [90, 1, 0, 0], [.25, .25, .25]);
         drawCircle([ .5, 0, (-i+.875)], [90, 1, 0, 0], [.25, .25, .25]);
     }
+
+    // push for cylinders
+    currentIndex += 249;
 
     modelViewMatrix = modelViewStack.pop();
 }
@@ -144,6 +147,23 @@ function drawCircle(t = [0, 0, 0], r = [0, 0, 1, 0], s = [1, 1, 1]) {
     gl.uniformMatrix4fv( projectionMatrixLoc, false, flatten(projectionMatrix) );
     
     gl.drawArrays(gl.TRIANGLES, currentIndex, circle_points);
+
+    modelViewMatrix = modelViewStack.pop();
+}
+
+function drawSurfaceRevolution(t = [0, 0, 0], r = [0, 0, 1, 0], s = [1, 1, 1]) {
+    t = translate(t[0], t[1], t[2]);
+    r = rotate(r[0], r[1], r[2], r[3]);
+    s = scale4(s[0], s[1], s[2]);
+
+    modelViewStack.push(modelViewMatrix);
+
+    modelViewMatrix = mult(mult(mult(modelViewMatrix, t), r), s);
+
+    gl.uniformMatrix4fv( modelViewMatrixLoc, false, flatten(modelViewMatrix) );
+    gl.uniformMatrix4fv( projectionMatrixLoc, false, flatten(projectionMatrix) );
+    
+    gl.drawArrays(gl.TRIANGLES, currentIndex, rev_points);
 
     modelViewMatrix = modelViewStack.pop();
 }
