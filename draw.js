@@ -1,4 +1,7 @@
 // drawObject.js
+// functions that render the objects
+
+// ==================== Adrian's functions ======================= //
 
 function drawCube(t = [0, 0, 0], r = [0, 0, 1, 0], s = [1, 1, 1]) {
     t = translate(t[0], t[1], t[2]);
@@ -160,10 +163,198 @@ function drawSurfaceRevolution(t = [0, 0, 0], r = [0, 0, 1, 0], s = [1, 1, 1]) {
 
     modelViewMatrix = mult(mult(mult(modelViewMatrix, t), r), s);
 
+    materialDiffuse = vec4(1, 165/255, 0, 1);
+    SetupLightingMaterial();
+
     gl.uniformMatrix4fv( modelViewMatrixLoc, false, flatten(modelViewMatrix) );
     gl.uniformMatrix4fv( projectionMatrixLoc, false, flatten(projectionMatrix) );
     
     gl.drawArrays(gl.TRIANGLES, currentIndex, rev_points);
 
     modelViewMatrix = modelViewStack.pop();
+    currentIndex += rev_points;
+}
+
+
+// ============================== Daniel's functions ====================== //
+
+// Added one other object
+function RenderRoad() {
+    // Apply transformations: translation and scaling
+    let translation = translate(0, 0.25, 0);
+    let scale = scale4(1, 1, 1); // Adjust the size of the light post
+    let trashCanPostModelViewMatrix = mult(modelViewMatrix, mult(translation, scale));
+
+    
+    // Pass the transformation matrix to the shader
+    gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(trashCanPostModelViewMatrix));
+
+    // change color
+    materialDiffuse = colors[6];
+    SetupLightingMaterial();
+
+    // draw sidewalk
+    gl.drawArrays(gl.TRIANGLES, currentIndex, 36);
+    currentIndex += 36;
+
+    // change color
+    materialDiffuse = colors[10];
+    SetupLightingMaterial();
+
+    // draw road
+    gl.drawArrays(gl.TRIANGLES, currentIndex, 36);
+    currentIndex += 36;
+
+    // change color
+    materialDiffuse = colors[3];
+    SetupLightingMaterial();
+
+    // draw road
+    gl.drawArrays(gl.TRIANGLES, currentIndex, 180);
+    currentIndex += 180;
+
+}
+
+function RenderLightPost() {
+    // Apply transformations: translation and scaling
+    let translation = translate(0, 0.25, 0);
+    let scale = scale4(1, 1, 1); // Adjust the size of the light post
+    let lightPostModelViewMatrix = mult(modelViewMatrix, mult(translation, scale));
+
+    // Pass the transformation matrix to the shader
+    gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(lightPostModelViewMatrix));
+
+    // Draw the light post (this assumes you have already set the color for the light post)
+    materialDiffuse = colors[8];
+    SetupLightingMaterial();
+    gl.drawArrays(gl.TRIANGLES, currentIndex, 36); // 36 vertices for a cube
+    currentIndex += 36;
+
+    // Draw the post (gray color)
+    materialDiffuse = colors[7];
+    SetupLightingMaterial();
+    gl.drawArrays(gl.TRIANGLES, currentIndex, 1200);
+    currentIndex += 1200; // Move past the light post
+
+    // Draw the lamp (yellow colored sphere)
+    materialDiffuse = colors[3];
+    SetupLightingMaterial();
+    gl.drawArrays(gl.TRIANGLES, currentIndex, 3750);
+    currentIndex += 3750; // Move past the lamp
+
+    // Draw the banner arm (dark gray color)
+    materialDiffuse = colors[8];
+    SetupLightingMaterial();
+    gl.drawArrays(gl.TRIANGLES, currentIndex, 36); // 36 vertices for a adjustable rectangle
+    currentIndex += 36; // Move past the adjustable rectangle
+
+    // Draw the banner arm underside
+    materialDiffuse = colors[0];
+    SetupLightingMaterial();
+    gl.drawArrays(gl.TRIANGLES, currentIndex, 1200); // vertices for a curve
+    currentIndex += 1200; // Move past the curve
+    gl.drawArrays(gl.TRIANGLES, currentIndex, 1200); // vertices for a curve
+    currentIndex += 1200; // Move past the curve
+}
+
+// Function to render the whole wall with hedge
+function RenderWall(rows, cols, brickWidth, brickHeight, xPosition, yPosition, zPosition, setScale) {
+    let xOffset = xPosition; // Center horizontally
+    let yOffset = yPosition; // Center vertically   
+
+    // Rendering the gray bricks
+
+    materialDiffuse = vec4(0.2, 0.2, 0.2, 1.0); // changing color to dark grey
+    materialShiness=0; // making brick less reflective
+    SetupLightingMaterial();  // apply changes
+
+    for (var row = 0; row < rows; row++) {
+        for (var col = 0; col < cols; col++) {
+            // Apply transformations: translation and scaling
+            let translation = translate(xOffset, yOffset, zPosition);
+            let scale = scale4(setScale * 2, setScale, 1); // Adjust the size of the bricks
+            let brickModelViewMatrix = mult(modelViewMatrix, mult(translation, scale));
+
+            // Pass the transformation matrix to the shader
+            gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(brickModelViewMatrix));
+
+            // Draw the brick (this assumes you have already set the color for the brick)
+            gl.drawArrays(gl.TRIANGLES, currentIndex, 36); // 36 vertices for a cube
+
+            // Increase the offset for the next brick
+            xOffset += brickWidth;
+        }
+        xOffset = xPosition; // Reset the x offset
+        yOffset += brickHeight;
+    }
+    currentIndex += 36;
+
+    // Rendering the hedge bricks
+
+    materialDiffuse = vec4(0.15, 0.4, 0.15, 1.0);
+    SetupLightingMaterial();
+
+    xOffset = xPosition + ((cols * brickWidth) / 2) - 0.32; // Start hedge bricks at the same position as the gray bricks
+    yOffset = yPosition + 0.01; // Slight offset for hedge bricks
+    for (var row = 0; row < rows + 2; row++) {
+        // Apply transformations: translation and scaling
+        let translation = translate(xOffset, yOffset, zPosition);
+        let scale = scale4(setScale * cols * 2, setScale + 0.05, 0.85); // Adjust the size of the bricks
+        let brickModelViewMatrix = mult(modelViewMatrix, mult(translation, scale));
+
+        // Pass the transformation matrix to the shader
+        gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(brickModelViewMatrix));
+
+         // Draw the brick (this assumes you have already set the color for the brick)
+         gl.drawArrays(gl.TRIANGLES, currentIndex, 36); // 36 vertices for a cube
+
+         yOffset += brickHeight;
+    }
+    currentIndex += 36; // Move past the hedge bricks
+}
+
+function RenderTrashCan() {
+    // Apply transformations: translation and scaling
+    let translation = translate(0, 0.25, 0);
+    let scale = scale4(1, 1, 1); // Adjust the size of the light post
+
+    modelViewStack.push(modelViewMatrix); // save
+    modelViewMatrix = mult(mult(modelViewMatrix, translation), scale);
+
+    // Pass the transformation matrix to the shader
+    gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(modelViewMatrix));
+
+    materialDiffuse = colors[7];
+    SetupLightingMaterial();
+
+    // draw body
+    gl.drawArrays(gl.TRIANGLES, currentIndex, 180);
+    currentIndex += 180;
+
+    // draw top
+    materialDiffuse = colors[0];
+    SetupLightingMaterial();
+
+    gl.drawArrays(gl.TRIANGLES, currentIndex, 5400);
+    currentIndex += 5400;
+
+    // draw receptical
+    modelViewStack.push(modelViewMatrix); // save
+    modelViewMatrix = mult(modelViewMatrix, rotate(90, 0, 0, 1));
+    modelViewMatrix = mult(modelViewMatrix, translate(1.33, -1.2, -0.5))
+
+    materialDiffuse = colors[0];
+    SetupLightingMaterial();
+    
+    gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(modelViewMatrix));
+    gl.drawArrays(gl.TRIANGLES, currentIndex, 240);
+    currentIndex += 240;
+    
+    modelViewMatrix = modelViewStack.pop(); // restore
+
+    gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(modelViewMatrix));
+    gl.drawArrays(gl.TRIANGLES, currentIndex, 36);
+    currentIndex += 36;
+
+    modelViewMatrix = modelViewStack.pop(); // restore
 }

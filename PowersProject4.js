@@ -28,7 +28,7 @@ var viewerPos;
 var flag = true;
 
 var lightPosition = vec4(-5, -5, 0, 9 );
-// var lightPosition = vec4(0, 1, 9, 0 );
+var lightPosition = vec4(0, 1, 9, 0 );
 
 var lightAmbient = vec4(0.2, 0.2, 0.2, 1.0 );
 var lightDiffuse = vec4(.8, 0.8, 0.8, 1.0 );
@@ -71,337 +71,15 @@ var colors = [
     vec4(0.4, 0.4, 0.4, 1.0), // Light Gray 6
     vec4(0.3, 0.3, 0.3, 1.0), // Light-Dark Gray 7
     vec4(0.2, 0.2, 0.2, 1.0), // Dark Gray 8
-    vec4(0.15, 0.4, 0.15, 1.0) // Dark Green 9
+    vec4(0.15, 0.4, 0.15, 1.0), // Dark Green 9
+    vec4(0.2, 0.2, 0.2, 1.0) // Black 10
 ];
-
-// // Function to create triangles for a quad
-// function quad(a, b, c, d, colorIndex) {
-//     pointsArray.push(vertices[a]);
-//     colorsArray.push(colors[colorIndex]);
-
-//     pointsArray.push(vertices[b]);
-//     colorsArray.push(colors[colorIndex]);
-
-//     pointsArray.push(vertices[c]);
-//     colorsArray.push(colors[colorIndex]);
-
-//     pointsArray.push(vertices[a]);
-//     colorsArray.push(colors[colorIndex]);
-
-//     pointsArray.push(vertices[c]);
-//     colorsArray.push(colors[colorIndex]);
-
-//     pointsArray.push(vertices[d]);
-//     colorsArray.push(colors[colorIndex]);
-// }
-
-function cylinder(numSlices, radius, height) {
-    // Create the cylinder
-    var angle = 2 * Math.PI / numSlices;
-
-    // Create the top of the cylinder
-    for (var i = 0; i < numSlices; i++) {
-        var x1 = radius * Math.cos(i * angle);
-        var y1 = radius * Math.sin(i * angle);
-        var x2 = radius * Math.cos((i + 1) * angle);
-        var y2 = radius * Math.sin((i + 1) * angle);
-
-        // Top face, now at y = height (above the base)
-        pointsArray.push(vec4(0, height, 0, 1.0));  // Center of top face
-        colorsArray.push(colors[8]);
-        pointsArray.push(vec4(x1, height, y1, 1.0));  // Edge of top face
-        colorsArray.push(colors[8]);
-        pointsArray.push(vec4(x2, height, y2, 1.0));  // Edge of top face
-        colorsArray.push(colors[8]);
-    }
-
-    // Create the bottom of the cylinder (this stays at y = 0, the base)
-    for (var i = 0; i < numSlices; i++) {
-        var x1 = radius * Math.cos(i * angle);
-        var y1 = radius * Math.sin(i * angle);
-        var x2 = radius * Math.cos((i + 1) * angle);
-        var y2 = radius * Math.sin((i + 1) * angle);
-
-        // Bottom face, now at y = 0 (fixed base)
-        pointsArray.push(vec4(0, 0, 0, 1.0));  // Center of bottom face
-        colorsArray.push(colors[8]);
-        pointsArray.push(vec4(x1, 0, y1, 1.0));  // Edge of bottom face
-        colorsArray.push(colors[8]);
-        pointsArray.push(vec4(x2, 0, y2, 1.0));  // Edge of bottom face
-        colorsArray.push(colors[8]);
-    }
-
-    // Create the sides of the cylinder
-    for (var i = 0; i < numSlices; i++) {
-        var x1 = radius * Math.cos(i * angle);
-        var y1 = radius * Math.sin(i * angle);
-        var x2 = radius * Math.cos((i + 1) * angle);
-        var y2 = radius * Math.sin((i + 1) * angle);
-
-        // Side faces, going from bottom (y = 0) to top (y = height)
-        pointsArray.push(vec4(x1, 0, y1, 1.0));  // Bottom edge
-        colorsArray.push(colors[6]);
-        pointsArray.push(vec4(x1, height, y1, 1.0));  // Top edge
-        colorsArray.push(colors[6]);
-        pointsArray.push(vec4(x2, height, y2, 1.0));  // Top edge
-        colorsArray.push(colors[6]);
-
-        pointsArray.push(vec4(x1, 0, y1, 1.0));  // Bottom edge
-        colorsArray.push(colors[6]);
-        pointsArray.push(vec4(x2, height, y2, 1.0));  // Top edge
-        colorsArray.push(colors[6]);
-        pointsArray.push(vec4(x2, 0, y2, 1.0));  // Bottom edge
-        colorsArray.push(colors[6]);
-    }
-}
-
-function sphere(numSlices, radius, xOffset, yOffset, zOffset) {
-    var angleStep = Math.PI / numSlices;  // angle between slices (latitude)
-    var numStacks = numSlices;  // Number of stacks (longitude)
-
-    // Loop through each stack (latitude) to create the sphere
-    for (var i = 0; i < numStacks; i++) {
-        var phi1 = angleStep * i - Math.PI / 2;  // Latitude angle for this stack
-        var phi2 = angleStep * (i + 1) - Math.PI / 2;  // Latitude angle for next stack
-
-        // Loop through each slice (longitude) to generate vertices around the circle
-        for (var j = 0; j < numSlices; j++) {
-            var theta1 = 2 * Math.PI * j / numSlices;  // Longitude angle for this slice
-            var theta2 = 2 * Math.PI * (j + 1) / numSlices;  // Longitude angle for next slice
-
-            // Calculate the vertices for the first stack (latitude) triangle
-            var x1 = radius * Math.cos(phi1) * Math.cos(theta1) + xOffset;
-            var y1 = radius * Math.sin(phi1) + yOffset;
-            var z1 = radius * Math.cos(phi1) * Math.sin(theta1);
-
-            var x2 = radius * Math.cos(phi1) * Math.cos(theta2) + xOffset;
-            var y2 = radius * Math.sin(phi1) + yOffset;
-            var z2 = radius * Math.cos(phi1) * Math.sin(theta2);
-
-            var x3 = radius * Math.cos(phi2) * Math.cos(theta1) + xOffset;
-            var y3 = radius * Math.sin(phi2) + yOffset;
-            var z3 = radius * Math.cos(phi2) * Math.sin(theta1);
-
-            var x4 = radius * Math.cos(phi2) * Math.cos(theta2) + xOffset;
-            var y4 = radius * Math.sin(phi2) + yOffset;
-            var z4 = radius * Math.cos(phi2) * Math.sin(theta2);
-
-            // Add the four vertices of the current rectangle (two triangles)
-            pointsArray.push(vec4(x1, y1, z1, 1.0));
-            colorsArray.push(colors[3]);
-            pointsArray.push(vec4(x2, y2, z2, 1.0));
-            colorsArray.push(colors[3]);
-            pointsArray.push(vec4(x3, y3, z3, 1.0));
-            colorsArray.push(colors[3]);
-
-            pointsArray.push(vec4(x2, y2, z2, 1.0));
-            colorsArray.push(colors[3]);
-            pointsArray.push(vec4(x4, y4, z4, 1.0));
-            colorsArray.push(colors[3]);
-            pointsArray.push(vec4(x3, y3, z3, 1.0));
-            colorsArray.push(colors[3]);
-        }
-    }
-}
-
-// Function to create a rectangle with adjustable dimensions and positioning
-function adjustableRectangle(length, width, height, xOffset, yOffset, zOffset) {
-    // Half dimensions to center the rectangle
-    var halfLength = length / 2;
-    var halfWidth = width / 2;
-    var halfHeight = height / 2;
-
-    // Define the 8 vertices of the rectangle with offsets
-    var vertices = [
-        vec4(-halfLength + xOffset, -halfHeight + yOffset, -halfWidth + zOffset, 1.0), // 0: Bottom-back-left
-        vec4(halfLength + xOffset, -halfHeight + yOffset, -halfWidth + zOffset, 1.0),  // 1: Bottom-back-right
-        vec4(halfLength + xOffset, halfHeight + yOffset, -halfWidth + zOffset, 1.0),   // 2: Top-back-right
-        vec4(-halfLength + xOffset, halfHeight + yOffset, -halfWidth + zOffset, 1.0),  // 3: Top-back-left
-        vec4(-halfLength + xOffset, -halfHeight + yOffset, halfWidth + zOffset, 1.0),  // 4: Bottom-front-left
-        vec4(halfLength + xOffset, -halfHeight + yOffset, halfWidth + zOffset, 1.0),   // 5: Bottom-front-right
-        vec4(halfLength + xOffset, halfHeight + yOffset, halfWidth + zOffset, 1.0),    // 6: Top-front-right
-        vec4(-halfLength + xOffset, halfHeight + yOffset, halfWidth + zOffset, 1.0)    // 7: Top-front-left
-    ];
-
-    // Define the 6 faces of the rectangle using triangles
-    var faces = [
-        // Back face
-        [0, 1, 2, 0, 2, 3],
-        // Front face
-        [4, 5, 6, 4, 6, 7],
-        // Bottom face
-        [0, 4, 5, 0, 5, 1],
-        // Top face
-        [3, 7, 6, 3, 6, 2],
-        // Left face
-        [0, 3, 7, 0, 7, 4],
-        // Right face
-        [1, 5, 6, 1, 6, 2]
-    ];
-
-    // Loop through each face and push the vertices into the points array
-    for (var i = 0; i < faces.length; i++) {
-        var face = faces[i];
-        for (var j = 0; j < face.length; j++) {
-            pointsArray.push(vertices[face[j]]);
-            colorsArray.push(colors[7]); // Assign a default color
-        }
-    }
-}
-
-// Tried to create adjustable shapes for more flexibility
-function curve90Degrees(radius, width, thickness, smoothness, xOffset, yOffset, zOffset, color) {
-    // Constrain smoothness to prevent invalid values
-    smoothness = Math.max(0, smoothness);
-
-    // Number of segments is determined by smoothness; 0 smoothness means a right angle
-    var numSegments = smoothness > 0 ? smoothness : 1;
-
-    // Calculate the angle increment for the curve
-    var angleIncrement = (Math.PI / 2) / numSegments; // 90 degrees divided into segments
-
-    // Arrays to hold the vertices for the outer and inner parts of the curve
-    var outerVertices = [];
-    var innerVertices = [];
-
-    // Generate the points along the curve for the outer and inner radii
-    for (var i = 0; i <= numSegments; i++) {
-        var angle = i * angleIncrement; // Current angle in radians
-        
-        // Outer curve
-        var outerX = (radius + thickness / 2) * Math.cos(angle) + xOffset;
-        var outerY = (radius + thickness / 2) * Math.sin(angle) + yOffset;
-        outerVertices.push(vec4(outerX, outerY, zOffset, 1.0));
-        
-        // Inner curve
-        var innerX = (radius - thickness / 2) * Math.cos(angle) + xOffset;
-        var innerY = (radius - thickness / 2) * Math.sin(angle) + yOffset;
-        innerVertices.push(vec4(innerX, innerY, zOffset, 1.0));
-    }
-
-    // Create the quads for the ribbon with thickness
-    for (var i = 0; i < outerVertices.length - 1; i++) {
-        var o1 = outerVertices[i];
-        var o2 = outerVertices[i + 1];
-        var i1 = innerVertices[i];
-        var i2 = innerVertices[i + 1];
-
-        // Create the top surface of the ribbon (outer curve to inner curve)
-        pointsArray.push(o1);
-        colorsArray.push(colors[0]);
-        pointsArray.push(i1);
-        colorsArray.push(colors[0]);
-        pointsArray.push(i2);
-        colorsArray.push(colors[0]);
-
-        pointsArray.push(o1);
-        colorsArray.push(colors[0]);
-        pointsArray.push(i2);
-        colorsArray.push(colors[0]);
-        pointsArray.push(o2);
-        colorsArray.push(colors[0]);
-
-        // Create the bottom surface of the ribbon (extruding along the z-axis)
-        pointsArray.push(vec4(o1[0], o1[1], o1[2] + width, 1.0));
-        colorsArray.push(colors[0]);
-        pointsArray.push(vec4(i1[0], i1[1], i1[2] + width, 1.0));
-        colorsArray.push(colors[0]);
-        pointsArray.push(vec4(i2[0], i2[1], i2[2] + width, 1.0));
-        colorsArray.push(colors[0]);
-
-        pointsArray.push(vec4(o1[0], o1[1], o1[2] + width, 1.0));
-        colorsArray.push(colors[0]);
-        pointsArray.push(vec4(i2[0], i2[1], i2[2] + width, 1.0));
-        colorsArray.push(colors[0]);
-        pointsArray.push(vec4(o2[0], o2[1], o2[2] + width, 1.0));
-        colorsArray.push(colors[0]);
-
-        // Create the sides connecting the top and bottom surfaces
-        pointsArray.push(o1);
-        colorsArray.push(colors[0]);
-        pointsArray.push(vec4(o1[0], o1[1], o1[2] + width, 1.0));
-        colorsArray.push(colors[0]);
-        pointsArray.push(vec4(o2[0], o2[1], o2[2] + width, 1.0));
-        colorsArray.push(colors[0]);
-
-        pointsArray.push(o1);
-        colorsArray.push(colors[0]);
-        pointsArray.push(vec4(o2[0], o2[1], o2[2] + width, 1.0));
-        colorsArray.push(colors[0]);
-        pointsArray.push(o2);
-        colorsArray.push(colors[0]);
-
-        pointsArray.push(i1);
-        colorsArray.push(colors[0]);
-        pointsArray.push(vec4(i1[0], i1[1], i1[2] + width, 1.0));
-        colorsArray.push(colors[0]);
-        pointsArray.push(vec4(i2[0], i2[1], i2[2] + width, 1.0));
-        colorsArray.push(colors[0]);
-
-        pointsArray.push(i1);
-        colorsArray.push(colors[0]);
-        pointsArray.push(vec4(i2[0], i2[1], i2[2] + width, 1.0));
-        colorsArray.push(colors[0]);
-        pointsArray.push(i2);
-        colorsArray.push(colors[0]);
-    }
-
-}
-
-// Function to draw a mesh, including bricks and grout
-function Draw() {
-    DrawWall();
-    DrawLightPost();
-}
-
-function DrawWall() {
-    // Draw each brick (gray color)
-    quad(v[1], v[0], v[3], v[2], v[6]); // Front face of the brick
-    quad(v[2], v[3], v[7], v[6], v[7]); // Right face
-    quad(v[3], v[0], v[4], v[7], v[8]); // Bottom face
-    quad(v[6], v[5], v[1], v[2], v[8]); // Top face
-    quad(v[4], v[5], v[6], v[7], v[6]); // Back face
-    quad(v[5], v[4], v[0], v[1], v[7]); // Left face
-    // Add green between bricks
-    quad(v[1], v[0], v[3], v[2], v[9]); // Front face
-    quad(v[2], v[3], v[7], v[6], v[9]); // Right face
-    quad(v[3], v[0], v[4], v[7], v[9]); // Bottom face
-    quad(v[6], v[5], v[1], v[2], v[9]); // Top face
-    quad(v[4], v[5], v[6], v[7], v[9]); // Back face
-    quad(v[5], v[4], v[0], v[1], v[9]); // Left face
-
-    numWallPoints = 72; // 36 vertices for the bricks, 36 for the green bricks
-}
-
-function DrawLightPost() {
-    // Draw the base of the light post
-    quad(v[1], v[0], v[3], v[2], v[6]); // Front face
-    quad(v[2], v[3], v[7], v[6], v[7]); // Right face
-    quad(v[3], v[0], v[4], v[7], v[8]); // Bottom face
-    quad(v[6], v[5], v[1], v[2], v[8]); // Top face
-    quad(v[4], v[5], v[6], v[7], v[6]); // Back face
-    quad(v[5], v[4], v[0], v[1], v[7]); // Left face
-
-    // Draw the post (gray color)
-    cylinder(100, 0.3, 7.0); // numSlices, radius, height
-
-    // Draw the lamp (yellow colored sphere)
-    sphere(25, 0.85, 0, 7, 0); // numSlices, radius, xOffset, yOffset, zOffset
-
-    // Draw the banner arm (dark gray color)
-    // Top of the banner arm
-    adjustableRectangle(3, 0.25, 0.1, -1.5, 6, 0); // length, width, height, xOffset, yOffset, zOffset
-    // Bottom of the banner arm (logrithmic curve)
-    curve90Degrees(1.75, 0.2, 0.08, 50, -2, 4.25, -0.095); // radius, width, thickness, smoothness, xOffset, yOffset, zOffset
-    curve90Degrees(-0.7, 0.2, 0.08, 50, -0.2, 6, -0.095); // radius, width, thickness, smoothness, xOffset, yOffset, zOffset
-
-}
 
 // no need to change after this point
 var AllInfo = {
 
     // Camera pan control variables.
-    zoomFactor : 4,
+    zoomFactor : 10,
     translateX : 0,
     translateY : 0,
 
@@ -441,6 +119,9 @@ window.onload = function init() {
     makeCarPoints();
     extrudedCircle();
     SurfaceRevPoints();
+    DrawRoad();
+    DrawTrashCan();
+
 
     var vBuffer = gl.createBuffer();
     gl.bindBuffer( gl.ARRAY_BUFFER, vBuffer);
@@ -513,105 +194,6 @@ window.onload = function init() {
     render();
 }
 
-// Function to render the whole wall with hedge
-function RenderWall(rows, cols, brickWidth, brickHeight, xPosition, yPosition, zPosition, setScale) {
-    let xOffset = xPosition; // Center horizontally
-    let yOffset = yPosition; // Center vertically   
-
-    // Rendering the gray bricks
-
-    materialDiffuse = vec4(0.2, 0.2, 0.2, 1.0); // changing color to dark grey
-    materialShiness=0; // making brick less reflective
-    SetupLightingMaterial();  // apply changes
-
-    for (var row = 0; row < rows; row++) {
-        for (var col = 0; col < cols; col++) {
-            // Apply transformations: translation and scaling
-            let translation = translate(xOffset, yOffset, zPosition);
-            let scale = scale4(setScale * 2, setScale, 1); // Adjust the size of the bricks
-            let brickModelViewMatrix = mult(modelViewMatrix, mult(translation, scale));
-
-            // Pass the transformation matrix to the shader
-            gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(brickModelViewMatrix));
-
-            // Draw the brick (this assumes you have already set the color for the brick)
-            gl.drawArrays(gl.TRIANGLES, currentIndex, 36); // 36 vertices for a cube
-
-            // Increase the offset for the next brick
-            xOffset += brickWidth;
-        }
-        xOffset = xPosition; // Reset the x offset
-        yOffset += brickHeight;
-    }
-    currentIndex += 36;
-
-    // Rendering the hedge bricks
-
-    materialDiffuse = vec4(0.15, 0.4, 0.15, 1.0);
-    SetupLightingMaterial();
-
-    xOffset = xPosition + ((cols * brickWidth) / 2) - 0.32; // Start hedge bricks at the same position as the gray bricks
-    yOffset = yPosition + 0.01; // Slight offset for hedge bricks
-    for (var row = 0; row < rows + 2; row++) {
-        // Apply transformations: translation and scaling
-        let translation = translate(xOffset, yOffset, zPosition);
-        let scale = scale4(setScale * cols * 2, setScale + 0.05, 0.85); // Adjust the size of the bricks
-        let brickModelViewMatrix = mult(modelViewMatrix, mult(translation, scale));
-
-        // Pass the transformation matrix to the shader
-        gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(brickModelViewMatrix));
-
-         // Draw the brick (this assumes you have already set the color for the brick)
-         gl.drawArrays(gl.TRIANGLES, currentIndex, 36); // 36 vertices for a cube
-
-         yOffset += brickHeight;
-    }
-    currentIndex += 36; // Move past the hedge bricks
-}
-
-function RenderLightPost() {
-    // Apply transformations: translation and scaling
-    let translation = translate(0, 0.25, 0);
-    let scale = scale4(1, 1, 1); // Adjust the size of the light post
-    let lightPostModelViewMatrix = mult(modelViewMatrix, mult(translation, scale));
-
-    // Pass the transformation matrix to the shader
-    gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(lightPostModelViewMatrix));
-
-    // Draw the light post (this assumes you have already set the color for the light post)
-    materialDiffuse = colors[8];
-    SetupLightingMaterial();
-    gl.drawArrays(gl.TRIANGLES, currentIndex, 36); // 36 vertices for a cube
-    currentIndex += 36;
-
-    // Draw the post (gray color)
-    materialDiffuse = colors[7];
-    SetupLightingMaterial();
-    gl.drawArrays(gl.TRIANGLES, currentIndex, 1200);
-    currentIndex += 1200; // Move past the light post
-
-    // Draw the lamp (yellow colored sphere)
-    materialDiffuse = colors[3];
-    SetupLightingMaterial();
-    gl.drawArrays(gl.TRIANGLES, currentIndex, 3750);
-    currentIndex += 3750; // Move past the lamp
-
-    // Draw the banner arm (dark gray color)
-    materialDiffuse = colors[8];
-    SetupLightingMaterial();
-    gl.drawArrays(gl.TRIANGLES, currentIndex, 36); // 36 vertices for a adjustable rectangle
-    currentIndex += 36; // Move past the adjustable rectangle
-
-    // Draw the banner arm underside
-    materialDiffuse = colors[0];
-    SetupLightingMaterial();
-    gl.drawArrays(gl.TRIANGLES, currentIndex, 1200); // vertices for a curve
-    currentIndex += 1200; // Move past the curve
-    gl.drawArrays(gl.TRIANGLES, currentIndex, 1200); // vertices for a curve
-    currentIndex += 1200; // Move past the curve
-}
-
-
 function render() {
     gl.clearColor(1.0, 1.0, 1.0, 1.0);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
@@ -637,24 +219,53 @@ function render() {
     gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(modelViewMatrix));
     gl.uniformMatrix4fv(projectionMatrixLoc, false, flatten(projectionMatrix));
     
-    // Objects to be rendered
-    modelViewStack.push(modelViewMatrix);
+    // RENDERING OBJECTS
+    modelViewStack.push(modelViewMatrix); // save 1
 
+    modelViewStack.push(modelViewMatrix); // save 2
+    let wall_t = translate(-4, 0, 15);
+    let wall_r = rotate(90, 0, 1, 0);
+    let wall_s = scale4(2, 2, 2);
+    modelViewMatrix = mult(mult(mult(modelViewMatrix, wall_t), wall_r), wall_s);
     RenderWall(10, 15, 0.65, 0.35, 3, 0, 0, 0.3); // #rows, #cols, brickWidth, brickHeight, xPosition, yPosition, zPosition, scale
 
-    modelViewStack.push(); // save mvm
-    modelViewMatrix = mult(modelViewMatrix, translate(0, 0, -2)) // move lamp post
+    modelViewMatrix = modelViewStack.pop(); // restore 2
+
+    // translating and rendering light post
+    modelViewStack.push(); // save 2
+
+    let lamp_t = translate(4, 0.5, -6);
+    let lamp_r = rotate(180, 0, 1, 0);
+    let lamp_s = scale4(1.5, 1.5, 1.5);
+    
+    modelViewMatrix = mult(mult(mult(modelViewMatrix, lamp_t), lamp_r), lamp_s);
+
     RenderLightPost();
-    modelViewMatrix = modelViewStack.pop(); // restore mvm
+    modelViewMatrix = modelViewStack.pop(); // restore 2
 
-    drawVendingMachine([-3, 0, 2], [0, 0, 1, 0], [4, 4, 4]);
-    drawCar([10, 0.5, 5], [90, 0, 1, 0], [3, 3, 3]);
+    // draw vending machine
+    drawVendingMachine([-3, 0, 2], [0, 0, 1, 0], [4, 4, 4]); // translate, rotate, scale
 
-    materialDiffuse = vec4(1, 165/255, 0, 1);
-    SetupLightingMaterial();
-    drawSurfaceRevolution([3, 0, 3], [0, 0, 1, 0], [2, 2, 2]);
+    // draw car
+    drawCar([7, 0.5, 5], [90, 0, 1, 0], [5, 5, 5]); // translate, rotate, scale
 
-    modelViewMatrix = modelViewStack.pop();
+    // change color and draw traffic cone
+    drawSurfaceRevolution([10, 0, 16], [0, 0, 1, 0], [2, 2, 2]); // translate, rotate, scale
+    
+    // draw road
+    RenderRoad();
+
+    // draw trash can
+    modelViewStack.push(modelViewMatrix); // save 2
+    let trash_t = translate(-2, 0, -3);
+    let trash_r = translate(0, 0, 1, 0);
+    let trash_s = scale4(1, 1, 1);
+    modelViewMatrix = mult(mult(mult(modelViewMatrix, trash_t), trash_r), trash_s);
+
+    RenderTrashCan();
+    modelViewMatrix = modelViewStack.pop(); // restore 2
+
+    modelViewMatrix = modelViewStack.pop(); // restore 1
 
     //requestAnimationFrame(render);
 
