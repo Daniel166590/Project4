@@ -1,6 +1,6 @@
 // Daniel Powers
-// Project 4: Stage I
-// Objects: Brick Hedge Wall, Light Post
+// Project 4: Stage II
+// Extruded Shape Trashcan
 
 var canvas;
 var gl;
@@ -334,55 +334,96 @@ function curve90Degrees(radius, width, thickness, smoothness, xOffset, yOffset, 
 
 }
 
+function extrudedCylinder(numSlices, radius, height) {
+    var angle = 2 * Math.PI / numSlices;
 
+    // Create the sides of the trash can (the vertical walls)
+    for (var i = 0; i < numSlices; i++) {
+        // Bottom circle vertices at y = 0
+        var x1 = radius * Math.cos(i * angle);
+        var y1 = radius * Math.sin(i * angle);
+        
+        // Top circle vertices at y = height
+        var x2 = radius * Math.cos((i + 1) * angle);
+        var y2 = radius * Math.sin((i + 1) * angle);
+        
+        // Create side face triangles
+        // Bottom edge (y = 0) to top edge (y = height)
+        pointsArray.push(vec4(x1, 0, y1, 1.0));  // Bottom edge
+        colorsArray.push(colors[6]);  // Color for the side
+        pointsArray.push(vec4(x1, height, y1, 1.0));  // Top edge
+        colorsArray.push(colors[6]);
+        pointsArray.push(vec4(x2, height, y2, 1.0));  // Top edge
+        colorsArray.push(colors[6]);
+
+        // Bottom edge (y = 0) to top edge (y = height)
+        pointsArray.push(vec4(x1, 0, y1, 1.0));  // Bottom edge
+        colorsArray.push(colors[6]);
+        pointsArray.push(vec4(x2, height, y2, 1.0));  // Top edge
+        colorsArray.push(colors[6]);
+        pointsArray.push(vec4(x2, 0, y2, 1.0));  // Bottom edge
+        colorsArray.push(colors[6]);
+    }
+}
 
 // Function to draw a mesh, including bricks and grout
 function Draw() {
-    DrawWall();
-    DrawLightPost();
+    DrawTrashCan();
 }
 
-function DrawWall() {
-    // Draw each brick (gray color)
-    quad(1, 0, 3, 2, 6); // Front face of the brick
-    quad(2, 3, 7, 6, 7); // Right face
-    quad(3, 0, 4, 7, 8); // Bottom face
-    quad(6, 5, 1, 2, 8); // Top face
-    quad(4, 5, 6, 7, 6); // Back face
-    quad(5, 4, 0, 1, 7); // Left face
-    // Add green between bricks
-    quad(1, 0, 3, 2, 9); // Front face
-    quad(2, 3, 7, 6, 9); // Right face
-    quad(3, 0, 4, 7, 9); // Bottom face
-    quad(6, 5, 1, 2, 9); // Top face
-    quad(4, 5, 6, 7, 9); // Back face
-    quad(5, 4, 0, 1, 9); // Left face
-
-    numWallPoints = 72; // 36 vertices for the bricks, 36 for the green bricks
+function DrawTrashCan(numSlices = 30, radius = 1, height = 2) {
+    extrudedCylinder(numSlices, radius, height);
+    sphere(numSlices, radius, 0, 2, 0);
 }
 
-function DrawLightPost() {
-    // Draw the base of the light post
-    quad(1, 0, 3, 2, 6); // Front face
-    quad(2, 3, 7, 6, 7); // Right face
-    quad(3, 0, 4, 7, 8); // Bottom face
-    quad(6, 5, 1, 2, 8); // Top face
-    quad(4, 5, 6, 7, 6); // Back face
-    quad(5, 4, 0, 1, 7); // Left face
+function RenderTrashCan() {
+    // Apply transformations: translation and scaling
+    let translation = translate(0, 0.25, 0);
+    let scale = scale4(1, 1, 1); // Adjust the size of the light post
+    let trashCanPostModelViewMatrix = mult(modelViewMatrix, mult(translation, scale));
 
-    // Draw the post (gray color)
-    cylinder(100, 0.3, 7.0); // numSlices, radius, height
+    // Pass the transformation matrix to the shader
+    gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(trashCanPostModelViewMatrix));
 
-    // Draw the lamp (yellow colored sphere)
-    sphere(25, 0.85, 0, 7, 0); // numSlices, radius, xOffset, yOffset, zOffset
+    gl.drawArrays(gl.TRIANGLES, currentIndex, 5580);
 
-    // Draw the banner arm (dark gray color)
-    // Top of the banner arm
-    adjustableRectangle(3, 0.25, 0.1, -1.5, 6, 0); // length, width, height, xOffset, yOffset, zOffset
-    // Bottom of the banner arm (logrithmic curve)
-    curve90Degrees(1.75, 0.2, 0.08, 50, -2, 4.25, -0.095); // radius, width, thickness, smoothness, xOffset, yOffset, zOffset
-    curve90Degrees(-0.7, 0.2, 0.08, 50, -0.2, 6, -0.095); // radius, width, thickness, smoothness, xOffset, yOffset, zOffset
+    currentIndex += 5580;
+}
 
+function render() {
+    gl.clearColor(1.0, 1.0, 1.0, 1.0);
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    gl.enable(gl.DEPTH_TEST);
+
+    // Set the camera's position
+    eye = vec3(
+        AllInfo.radius * Math.cos(AllInfo.phi),
+        AllInfo.radius * Math.sin(AllInfo.theta),
+        AllInfo.radius * Math.sin(AllInfo.phi)
+    );
+
+    modelViewMatrix = lookAt(eye, at, up);
+
+    projectionMatrix = ortho(
+        left * AllInfo.zoomFactor - AllInfo.translateX,
+        right * AllInfo.zoomFactor - AllInfo.translateX,
+        bottom * AllInfo.zoomFactor - AllInfo.translateY,
+        ytop * AllInfo.zoomFactor - AllInfo.translateY,
+        near, far
+    );
+
+    gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(modelViewMatrix));
+    gl.uniformMatrix4fv(projectionMatrixLoc, false, flatten(projectionMatrix));
+
+    // Objects to be rendered
+    RenderTrashCan();
+
+
+    //requestAnimationFrame(render);
+
+    // Debugging
+    console.log("Points: " + pointsArray.length + "\nColors: " + colorsArray.length + "\nCurrent Index: " + currentIndex);
+    currentIndex = 0; // Reset the current index for the next frame
 }
 
 // no need to change after this point
@@ -496,123 +537,6 @@ window.onload = function init() {
     });
     render();
 }
-
-// Function to render the whole wall with hedge
-function RenderWall(rows, cols, brickWidth, brickHeight, xPosition, yPosition, zPosition, setScale) {
-    let xOffset = xPosition; // Center horizontally
-    let yOffset = yPosition; // Center vertically   
-
-    // Rendering the gray bricks
-    for (var row = 0; row < rows; row++) {
-        for (var col = 0; col < cols; col++) {
-            // Apply transformations: translation and scaling
-            let translation = translate(xOffset, yOffset, zPosition);
-            let scale = scale4(setScale * 2, setScale, 1); // Adjust the size of the bricks
-            let brickModelViewMatrix = mult(modelViewMatrix, mult(translation, scale));
-
-            // Pass the transformation matrix to the shader
-            gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(brickModelViewMatrix));
-
-            // Draw the brick (this assumes you have already set the color for the brick)
-            gl.drawArrays(gl.TRIANGLES, currentIndex, 36); // 36 vertices for a cube
-
-            // Increase the offset for the next brick
-            xOffset += brickWidth;
-        }
-        xOffset = xPosition; // Reset the x offset
-        yOffset += brickHeight;
-    }
-    currentIndex += 36;
-
-    // Rendering the hedge bricks
-    xOffset = xPosition + ((cols * brickWidth) / 2) - 0.32; // Start hedge bricks at the same position as the gray bricks
-    yOffset = yPosition + 0.01; // Slight offset for hedge bricks
-    for (var row = 0; row < rows + 2; row++) {
-        // Apply transformations: translation and scaling
-        let translation = translate(xOffset, yOffset, zPosition);
-        let scale = scale4(setScale * cols * 2, setScale + 0.05, 0.85); // Adjust the size of the bricks
-        let brickModelViewMatrix = mult(modelViewMatrix, mult(translation, scale));
-
-        // Pass the transformation matrix to the shader
-        gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(brickModelViewMatrix));
-
-         // Draw the brick (this assumes you have already set the color for the brick)
-         gl.drawArrays(gl.TRIANGLES, currentIndex, 36); // 36 vertices for a cube
-
-         yOffset += brickHeight;
-    }
-    currentIndex += 36; // Move past the hedge bricks
-}
-
-function RenderLightPost() {
-    // Apply transformations: translation and scaling
-    let translation = translate(0, 0.25, 0);
-    let scale = scale4(1, 1, 1); // Adjust the size of the light post
-    let lightPostModelViewMatrix = mult(modelViewMatrix, mult(translation, scale));
-
-    // Pass the transformation matrix to the shader
-    gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(lightPostModelViewMatrix));
-
-    // Draw the light post (this assumes you have already set the color for the light post)
-    gl.drawArrays(gl.TRIANGLES, currentIndex, 36); // 36 vertices for a cube
-    currentIndex += 36;
-
-    // Draw the post (gray color)
-    gl.drawArrays(gl.TRIANGLES, currentIndex, 1200);
-    currentIndex += 1200; // Move past the light post
-
-    // Draw the lamp (yellow colored sphere)
-    gl.drawArrays(gl.TRIANGLES, currentIndex, 3750);
-    currentIndex += 3750; // Move past the lamp
-
-    // Draw the banner arm (dark gray color)
-    gl.drawArrays(gl.TRIANGLES, currentIndex, 36); // 36 vertices for a adjustable rectangle
-    currentIndex += 36; // Move past the adjustable rectangle
-    // Draw the banner arm underside
-    gl.drawArrays(gl.TRIANGLES, currentIndex, 1200); // vertices for a curve
-    currentIndex += 1200; // Move past the curve
-    gl.drawArrays(gl.TRIANGLES, currentIndex, 1200); // vertices for a curve
-    currentIndex += 1200; // Move past the curve
-}
-
-
-function render() {
-    gl.clearColor(1.0, 1.0, 1.0, 1.0);
-    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-    gl.enable(gl.DEPTH_TEST);
-
-    // Set the camera's position
-    eye = vec3(
-        AllInfo.radius * Math.cos(AllInfo.phi),
-        AllInfo.radius * Math.sin(AllInfo.theta),
-        AllInfo.radius * Math.sin(AllInfo.phi)
-    );
-
-    modelViewMatrix = lookAt(eye, at, up);
-
-    projectionMatrix = ortho(
-        left * AllInfo.zoomFactor - AllInfo.translateX,
-        right * AllInfo.zoomFactor - AllInfo.translateX,
-        bottom * AllInfo.zoomFactor - AllInfo.translateY,
-        ytop * AllInfo.zoomFactor - AllInfo.translateY,
-        near, far
-    );
-
-    gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(modelViewMatrix));
-    gl.uniformMatrix4fv(projectionMatrixLoc, false, flatten(projectionMatrix));
-
-    // Objects to be rendered
-    RenderWall(10, 15, 0.65, 0.35, 3, 0, 0, 0.3); // #rows, #cols, brickWidth, brickHeight, xPosition, yPosition, zPosition, scale
-    RenderLightPost();
-
-
-    //requestAnimationFrame(render);
-
-    // Debugging
-    console.log("Points: " + pointsArray.length + "\nColors: " + colorsArray.length + "\nCurrent Index: " + currentIndex);
-    currentIndex = 0; // Reset the current index for the next frame
-}
-
 
 function scale4(a, b, c) {
    var result = mat4();
