@@ -29,7 +29,6 @@ function drawVendingMachine(trans = [0, 0, 0], rot = [0, 0, 1, 0], scale = [1, 1
         vec4(.64, 1, 0, 1),
         vec4(128/255, 0, 128/255, 1)
     ];
-
     // draw body
     materialAmbient = vec4( .2, .2, .2, 1.0 );
     materialDiffuse = vec4( 122/255, 122/255, 122/255, 1.0);
