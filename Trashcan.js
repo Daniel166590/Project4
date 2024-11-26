@@ -82,66 +82,6 @@ function quad(a, b, c, d, colorIndex) {
     colorsArray.push(colors[colorIndex]);
 }
 
-function cylinder(numSlices, radius, height) {
-    // Create the cylinder
-    var angle = 2 * Math.PI / numSlices;
-
-    // Create the top of the cylinder
-    for (var i = 0; i < numSlices; i++) {
-        var x1 = radius * Math.cos(i * angle);
-        var y1 = radius * Math.sin(i * angle);
-        var x2 = radius * Math.cos((i + 1) * angle);
-        var y2 = radius * Math.sin((i + 1) * angle);
-
-        // Top face, now at y = height (above the base)
-        pointsArray.push(vec4(0, height, 0, 1.0));  // Center of top face
-        colorsArray.push(colors[8]);
-        pointsArray.push(vec4(x1, height, y1, 1.0));  // Edge of top face
-        colorsArray.push(colors[8]);
-        pointsArray.push(vec4(x2, height, y2, 1.0));  // Edge of top face
-        colorsArray.push(colors[8]);
-    }
-
-    // Create the bottom of the cylinder (this stays at y = 0, the base)
-    for (var i = 0; i < numSlices; i++) {
-        var x1 = radius * Math.cos(i * angle);
-        var y1 = radius * Math.sin(i * angle);
-        var x2 = radius * Math.cos((i + 1) * angle);
-        var y2 = radius * Math.sin((i + 1) * angle);
-
-        // Bottom face, now at y = 0 (fixed base)
-        pointsArray.push(vec4(0, 0, 0, 1.0));  // Center of bottom face
-        colorsArray.push(colors[8]);
-        pointsArray.push(vec4(x1, 0, y1, 1.0));  // Edge of bottom face
-        colorsArray.push(colors[8]);
-        pointsArray.push(vec4(x2, 0, y2, 1.0));  // Edge of bottom face
-        colorsArray.push(colors[8]);
-    }
-
-    // Create the sides of the cylinder
-    for (var i = 0; i < numSlices; i++) {
-        var x1 = radius * Math.cos(i * angle);
-        var y1 = radius * Math.sin(i * angle);
-        var x2 = radius * Math.cos((i + 1) * angle);
-        var y2 = radius * Math.sin((i + 1) * angle);
-
-        // Side faces, going from bottom (y = 0) to top (y = height)
-        pointsArray.push(vec4(x1, 0, y1, 1.0));  // Bottom edge
-        colorsArray.push(colors[6]);
-        pointsArray.push(vec4(x1, height, y1, 1.0));  // Top edge
-        colorsArray.push(colors[6]);
-        pointsArray.push(vec4(x2, height, y2, 1.0));  // Top edge
-        colorsArray.push(colors[6]);
-
-        pointsArray.push(vec4(x1, 0, y1, 1.0));  // Bottom edge
-        colorsArray.push(colors[6]);
-        pointsArray.push(vec4(x2, height, y2, 1.0));  // Top edge
-        colorsArray.push(colors[6]);
-        pointsArray.push(vec4(x2, 0, y2, 1.0));  // Bottom edge
-        colorsArray.push(colors[6]);
-    }
-}
-
 function sphere(numSlices, radius, xOffset, yOffset, zOffset) {
     var angleStep = Math.PI / numSlices;  // angle between slices (latitude)
     var numStacks = numSlices;  // Number of stacks (longitude)
@@ -370,7 +310,6 @@ function extrudedCylinder(numSlices, radius, height) {
 // Function to draw a mesh, including bricks and grout
 function Draw() {
     DrawTrashCan();
-    DrawRoad();
 }
 
 // Added one extruded shape object
@@ -379,22 +318,6 @@ function DrawTrashCan(numSlices = 30, radius = 1, height = 2) {
     sphere(numSlices, radius, 0, 2, 0); // radius, xOffset, yOffset, zOffset
     curve90Degrees(radius * 0.8, 1.0, 1.2, 10, 1.57, 1.2, 2, -0.5, colors[0]); // radius, width, thickness, smoothness, angleOffset, xOffset, yOffset, zOffset, color
     adjustableRectangle(0.1, 1, 1.2, 1.25, 2.8, 0); // length, width, height, xOffset, yOffset, zOffset
-}
-
-// Added one other object
-function DrawRoad() {
-    // Sidewalk
-    adjustableRectangle(10, 50, 1.5, 0, -.5, 0, 6); // length, width, height, xOffset, yOffset, zOffset, color
-
-    // Road Surface
-    adjustableRectangle(20, 50, 0.5, 15, -1.0, 0, 10); // length, width, height, xOffset, yOffset, zOffset, color
-
-    // Striped lines on the road
-    adjustableRectangle(1, 5, 0.8, 15, -1.0, -20, 3); // length, width, height, xOffset, yOffset, zOffset, color
-    adjustableRectangle(1, 5, 0.8, 15, -1.0, -10, 3); // length, width, height, xOffset, yOffset, zOffset, color
-    adjustableRectangle(1, 5, 0.8, 15, -1.0, 0, 3); // length, width, height, xOffset, yOffset, zOffset, color
-    adjustableRectangle(1, 5, 0.8, 15, -1.0, 10, 3); // length, width, height, xOffset, yOffset, zOffset, color
-    adjustableRectangle(1, 5, 0.8, 15, -1.0, 20, 3); // length, width, height, xOffset, yOffset, zOffset, color
 }
 
 // Added one extruded shape object
@@ -410,21 +333,6 @@ function RenderTrashCan() {
     gl.drawArrays(gl.TRIANGLES, currentIndex, 5856);
 
     currentIndex += 5856;
-}
-
-// Added one other object
-function RenderRoad() {
-    // Apply transformations: translation and scaling
-    let translation = translate(0, 0.25, 0);
-    let scale = scale4(1, 1, 1); // Adjust the size of the light post
-    let trashCanPostModelViewMatrix = mult(modelViewMatrix, mult(translation, scale));
-
-    // Pass the transformation matrix to the shader
-    gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(trashCanPostModelViewMatrix));
-
-    gl.drawArrays(gl.TRIANGLES, currentIndex, 252);
-
-    currentIndex += 252;
 }
 
 function render() {
@@ -454,7 +362,6 @@ function render() {
 
     // Objects to be rendered
     RenderTrashCan();
-    RenderRoad();
 
 
     //requestAnimationFrame(render);
