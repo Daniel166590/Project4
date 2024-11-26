@@ -57,7 +57,8 @@ var colors = [
     vec4(0.4, 0.4, 0.4, 1.0), // Light Gray 6
     vec4(0.3, 0.3, 0.3, 1.0), // Light-Dark Gray 7
     vec4(0.2, 0.2, 0.2, 1.0), // Dark Gray 8
-    vec4(0.15, 0.4, 0.15, 1.0) // Dark Green 9
+    vec4(0.15, 0.4, 0.15, 1.0), // Dark Green 9
+    vec4(0.2, 0.2, 0.2, 1.0) // Black 10
 ];
 
 // Function to create triangles for a quad
@@ -174,24 +175,24 @@ function sphere(numSlices, radius, xOffset, yOffset, zOffset) {
 
             // Add the four vertices of the current rectangle (two triangles)
             pointsArray.push(vec4(x1, y1, z1, 1.0));
-            colorsArray.push(colors[3]);
+            colorsArray.push(colors[10]);
             pointsArray.push(vec4(x2, y2, z2, 1.0));
-            colorsArray.push(colors[3]);
+            colorsArray.push(colors[10]);
             pointsArray.push(vec4(x3, y3, z3, 1.0));
-            colorsArray.push(colors[3]);
+            colorsArray.push(colors[10]);
 
             pointsArray.push(vec4(x2, y2, z2, 1.0));
-            colorsArray.push(colors[3]);
+            colorsArray.push(colors[10]);
             pointsArray.push(vec4(x4, y4, z4, 1.0));
-            colorsArray.push(colors[3]);
+            colorsArray.push(colors[10]);
             pointsArray.push(vec4(x3, y3, z3, 1.0));
-            colorsArray.push(colors[3]);
+            colorsArray.push(colors[10]);
         }
     }
 }
 
 // Function to create a rectangle with adjustable dimensions and positioning
-function adjustableRectangle(length, width, height, xOffset, yOffset, zOffset) {
+function adjustableRectangle(length, width, height, xOffset, yOffset, zOffset, colorIndex = 0) {
     // Half dimensions to center the rectangle
     var halfLength = length / 2;
     var halfWidth = width / 2;
@@ -230,13 +231,13 @@ function adjustableRectangle(length, width, height, xOffset, yOffset, zOffset) {
         var face = faces[i];
         for (var j = 0; j < face.length; j++) {
             pointsArray.push(vertices[face[j]]);
-            colorsArray.push(colors[7]); // Assign a default color
+            colorsArray.push(colors[colorIndex]); // Assign a default color
         }
     }
 }
 
-// Tried to create adjustable shapes for more flexibility
-function curve90Degrees(radius, width, thickness, smoothness, xOffset, yOffset, zOffset, color) {
+// Tried to create adjustable shapes for more flexibility (Extruded shape)
+function curve90Degrees(radius, width, thickness, smoothness, angleOffset, xOffset, yOffset, zOffset, color) {
     // Constrain smoothness to prevent invalid values
     smoothness = Math.max(0, smoothness);
 
@@ -252,7 +253,7 @@ function curve90Degrees(radius, width, thickness, smoothness, xOffset, yOffset, 
 
     // Generate the points along the curve for the outer and inner radii
     for (var i = 0; i <= numSegments; i++) {
-        var angle = i * angleIncrement; // Current angle in radians
+        var angle = i * angleIncrement + angleOffset; // Current angle in radians with offset
         
         // Outer curve
         var outerX = (radius + thickness / 2) * Math.cos(angle) + xOffset;
@@ -331,9 +332,9 @@ function curve90Degrees(radius, width, thickness, smoothness, xOffset, yOffset, 
         pointsArray.push(i2);
         colorsArray.push(colors[0]);
     }
-
 }
 
+// Function to create an extruded cylinder with a specified number of slices, radius, and height (Extruded shape)
 function extrudedCylinder(numSlices, radius, height) {
     var angle = 2 * Math.PI / numSlices;
 
@@ -350,32 +351,53 @@ function extrudedCylinder(numSlices, radius, height) {
         // Create side face triangles
         // Bottom edge (y = 0) to top edge (y = height)
         pointsArray.push(vec4(x1, 0, y1, 1.0));  // Bottom edge
-        colorsArray.push(colors[6]);  // Color for the side
+        colorsArray.push(colors[7]);  // Color for the side
         pointsArray.push(vec4(x1, height, y1, 1.0));  // Top edge
-        colorsArray.push(colors[6]);
+        colorsArray.push(colors[7]);
         pointsArray.push(vec4(x2, height, y2, 1.0));  // Top edge
-        colorsArray.push(colors[6]);
+        colorsArray.push(colors[7]);
 
         // Bottom edge (y = 0) to top edge (y = height)
         pointsArray.push(vec4(x1, 0, y1, 1.0));  // Bottom edge
-        colorsArray.push(colors[6]);
+        colorsArray.push(colors[7]);
         pointsArray.push(vec4(x2, height, y2, 1.0));  // Top edge
-        colorsArray.push(colors[6]);
+        colorsArray.push(colors[7]);
         pointsArray.push(vec4(x2, 0, y2, 1.0));  // Bottom edge
-        colorsArray.push(colors[6]);
+        colorsArray.push(colors[7]);
     }
 }
 
 // Function to draw a mesh, including bricks and grout
 function Draw() {
     DrawTrashCan();
+    DrawRoad();
 }
 
+// Added one extruded shape object
 function DrawTrashCan(numSlices = 30, radius = 1, height = 2) {
     extrudedCylinder(numSlices, radius, height);
-    sphere(numSlices, radius, 0, 2, 0);
+    sphere(numSlices, radius, 0, 2, 0); // radius, xOffset, yOffset, zOffset
+    curve90Degrees(radius * 0.8, 1.0, 1.2, 10, 1.57, 1.2, 2, -0.5, colors[0]); // radius, width, thickness, smoothness, angleOffset, xOffset, yOffset, zOffset, color
+    adjustableRectangle(0.1, 1, 1.2, 1.25, 2.8, 0); // length, width, height, xOffset, yOffset, zOffset
 }
 
+// Added one other object
+function DrawRoad() {
+    // Sidewalk
+    adjustableRectangle(10, 50, 1.5, 0, -.5, 0, 6); // length, width, height, xOffset, yOffset, zOffset, color
+
+    // Road Surface
+    adjustableRectangle(20, 50, 0.5, 15, -1.0, 0, 10); // length, width, height, xOffset, yOffset, zOffset, color
+
+    // Striped lines on the road
+    adjustableRectangle(1, 5, 0.8, 15, -1.0, -20, 3); // length, width, height, xOffset, yOffset, zOffset, color
+    adjustableRectangle(1, 5, 0.8, 15, -1.0, -10, 3); // length, width, height, xOffset, yOffset, zOffset, color
+    adjustableRectangle(1, 5, 0.8, 15, -1.0, 0, 3); // length, width, height, xOffset, yOffset, zOffset, color
+    adjustableRectangle(1, 5, 0.8, 15, -1.0, 10, 3); // length, width, height, xOffset, yOffset, zOffset, color
+    adjustableRectangle(1, 5, 0.8, 15, -1.0, 20, 3); // length, width, height, xOffset, yOffset, zOffset, color
+}
+
+// Added one extruded shape object
 function RenderTrashCan() {
     // Apply transformations: translation and scaling
     let translation = translate(0, 0.25, 0);
@@ -385,9 +407,24 @@ function RenderTrashCan() {
     // Pass the transformation matrix to the shader
     gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(trashCanPostModelViewMatrix));
 
-    gl.drawArrays(gl.TRIANGLES, currentIndex, 5580);
+    gl.drawArrays(gl.TRIANGLES, currentIndex, 5856);
 
-    currentIndex += 5580;
+    currentIndex += 5856;
+}
+
+// Added one other object
+function RenderRoad() {
+    // Apply transformations: translation and scaling
+    let translation = translate(0, 0.25, 0);
+    let scale = scale4(1, 1, 1); // Adjust the size of the light post
+    let trashCanPostModelViewMatrix = mult(modelViewMatrix, mult(translation, scale));
+
+    // Pass the transformation matrix to the shader
+    gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(trashCanPostModelViewMatrix));
+
+    gl.drawArrays(gl.TRIANGLES, currentIndex, 252);
+
+    currentIndex += 252;
 }
 
 function render() {
@@ -417,6 +454,7 @@ function render() {
 
     // Objects to be rendered
     RenderTrashCan();
+    RenderRoad();
 
 
     //requestAnimationFrame(render);
