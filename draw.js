@@ -215,7 +215,13 @@ function RenderRoad() {
 
 }
 
-function RenderLightPost() {
+function RenderLightPost(lampColor) {
+    // Save the original lighting properties
+    const originalAmbient = materialAmbient;
+    const originalDiffuse = materialDiffuse;
+    const originalSpecular = materialSpecular;
+    const originalShininess = materialShininess;
+
     // Apply transformations: translation and scaling
     let translation = translate(0, 0.25, 0);
     let scale = scale4(1, 1, 1); // Adjust the size of the light post
@@ -236,11 +242,17 @@ function RenderLightPost() {
     gl.drawArrays(gl.TRIANGLES, currentIndex, 1200);
     currentIndex += 1200; // Move past the light post
 
+    // Set the lighting for the lamp bulb
+    ColorLampPostBulb(lampColor);
+
     // Draw the lamp (yellow colored sphere)
     materialDiffuse = colors[3];
     SetupLightingMaterial();
     gl.drawArrays(gl.TRIANGLES, currentIndex, 3750);
     currentIndex += 3750; // Move past the lamp
+
+    // Restore the original lighting properties
+    RestoreOriginalLighting(originalAmbient, originalDiffuse, originalSpecular, originalShininess);
 
     // Draw the banner arm (dark gray color)
     materialDiffuse = colors[8];
@@ -255,7 +267,35 @@ function RenderLightPost() {
     currentIndex += 1200; // Move past the curve
     gl.drawArrays(gl.TRIANGLES, currentIndex, 1200); // vertices for a curve
     currentIndex += 1200; // Move past the curve
+
+    function ColorLampPostBulb(lampColor) {
+        // Set the current material color
+        materialAmbient = lampColor;
+        materialDiffuse = lampColor;
+
+        // Pass the updated material properties to the shaders
+        gl.uniform4fv(gl.getUniformLocation(program, "ambientProduct"), flatten(mult(lightAmbient, materialAmbient)));
+        gl.uniform4fv(gl.getUniformLocation(program, "diffuseProduct"), flatten(mult(lightDiffuse, materialDiffuse)));
+        gl.uniform4fv(gl.getUniformLocation(program, "specularProduct"), flatten(mult(lightSpecular, materialSpecular)));
+        gl.uniform4fv(gl.getUniformLocation(program, "lightPosition"), flatten(lightPosition));
+        gl.uniform1f(gl.getUniformLocation(program, "shininess"), materialShininess);
+    }
+
+    function RestoreOriginalLighting(ambient, diffuse, specular, shininess) {
+        materialAmbient = ambient;
+        materialDiffuse = diffuse;
+        materialSpecular = specular;
+        materialShininess = shininess;
+
+        // Pass the restored properties to the shaders
+        gl.uniform4fv(gl.getUniformLocation(program, "ambientProduct"), flatten(mult(lightAmbient, materialAmbient)));
+        gl.uniform4fv(gl.getUniformLocation(program, "diffuseProduct"), flatten(mult(lightDiffuse, materialDiffuse)));
+        gl.uniform4fv(gl.getUniformLocation(program, "specularProduct"), flatten(mult(lightSpecular, materialSpecular)));
+        gl.uniform4fv(gl.getUniformLocation(program, "lightPosition"), flatten(lightPosition));
+        gl.uniform1f(gl.getUniformLocation(program, "shininess"), materialShininess);
+    }
 }
+
 
 // Function to render the whole wall with hedge
 function RenderWall(rows, cols, brickWidth, brickHeight, xPosition, yPosition, zPosition, setScale) {

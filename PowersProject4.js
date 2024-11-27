@@ -27,12 +27,11 @@ var modelView, projection;
 var viewerPos;
 var flag = true;
 
-var lightPosition = vec4(-5, -5, 0, 9 );
-var lightPosition = vec4(0, 1, 9, 0 );
+var lightPosition = vec4(50, 100, 50, 1);
 
-var lightAmbient = vec4(0.2, 0.2, 0.2, 1.0 );
-var lightDiffuse = vec4(.8, 0.8, 0.8, 1.0 );
-var lightSpecular = vec4( .8, .8, .8, 1.0 );
+var lightAmbient = vec4(0.8, 0.8, 0.8, 1.0 );
+var lightDiffuse = vec4(0.95, 0.95, 0.95, 1.0 );
+var lightSpecular = vec4( 1.0, 1.0, 1.0, 1.0 );
 
 var materialAmbient = vec4( .2, .2, .2, 1.0 );
 var materialDiffuse = vec4( 0.0, 0.5, 1, 1.0);
@@ -104,8 +103,6 @@ window.onload = function init() {
     if ( !gl ) { alert( "WebGL isn't available" ); }
 
     gl.viewport( 0, 0, canvas.width, canvas.height );
-    gl.clearColor( 0.0, 0.5, 1.0, 1.0 );
-
     //
     //  Load shaders and initialize attribute buffers
     //
@@ -130,15 +127,6 @@ window.onload = function init() {
 	var vPosition = gl.getAttribLocation( program, "vPosition");
     gl.vertexAttribPointer( vPosition, 4, gl.FLOAT, false, 0, 0);
     gl.enableVertexAttribArray( vPosition);
-
-	// color buffer
-    var cBuffer = gl.createBuffer();
-    gl.bindBuffer( gl.ARRAY_BUFFER, cBuffer );
-    gl.bufferData( gl.ARRAY_BUFFER, flatten(colorsArray), gl.STATIC_DRAW );
-
-    var vColor = gl.getAttribLocation( program, "vColor" );
-    gl.vertexAttribPointer( vColor, 4, gl.FLOAT, false, 0, 0 );
-    gl.enableVertexAttribArray( vColor );
 
     modelViewMatrixLoc = gl.getUniformLocation( program, "modelViewMatrix" );
     projectionMatrixLoc = gl.getUniformLocation( program, "projectionMatrix" );
@@ -195,7 +183,7 @@ window.onload = function init() {
 }
 
 function render() {
-    gl.clearColor(1.0, 1.0, 1.0, 1.0);
+    gl.clearColor(0.05, 0.05, 0.05, 1.0);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
     gl.enable(gl.DEPTH_TEST);
 
@@ -240,7 +228,7 @@ function render() {
     
     modelViewMatrix = mult(mult(mult(modelViewMatrix, lamp_t), lamp_r), lamp_s);
 
-    RenderLightPost();
+    RenderLightPost(lampCurrentColor);
     modelViewMatrix = modelViewStack.pop(); // restore 2
 
     // draw vending machine
@@ -319,3 +307,17 @@ function Newell(vertices)
 
    return (normalize(vec3(x, y, z)));
 }
+
+
+
+// Flashing lamp code
+var lampLightColor = vec4(1.0, 1.0, 0.8, 1.0); // Light yellow
+var lampDarkColor = vec4(0.5, 0.5, 0.3, 1.0); // Dark yellow
+var lampCurrentColor = lampLightColor; // Start with light color
+
+var isLampLight = true; // State to toggle between light and dark
+setInterval(() => {
+    isLampLight = !isLampLight; // Toggle state
+    lampCurrentColor = isLampLight ? lampLightColor : lampDarkColor; // Update color
+    render(); // Re-render the scene to apply the new color
+}, 500); // Change every 500 milliseconds (adjust as needed)
