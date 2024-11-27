@@ -242,10 +242,13 @@ function RenderLightPost(lampColor) {
     gl.drawArrays(gl.TRIANGLES, currentIndex, 1200);
     currentIndex += 1200; // Move past the light post
 
-    // Set the lighting for the lamp bulb
-    ColorLampPostBulb(lampColor);
+    if(lampColorToggled) {
+        ColorLampPostBulb(lampColor);
+    } else {
+        RestoreOriginalLighting(originalAmbient, originalDiffuse, originalSpecular, originalShininess);
+    }
 
-    // Draw the lamp (yellow colored sphere)
+    // Draw the lamp (yellow colored sphere)a
     materialDiffuse = colors[3];
     SetupLightingMaterial();
     gl.drawArrays(gl.TRIANGLES, currentIndex, 3750);

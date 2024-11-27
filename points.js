@@ -13,8 +13,6 @@ function tri(a, b, c, colorIndex = 1) {
     normalsArray.push(normal);
     pointsArray.push(c);
     normalsArray.push(normal);
-    for (let i = 0; i < 3; i++)
-        colorsArray.push(colors[colorIndex]);
 }
 
 function quad(a, b, c, d, color = 1) {
@@ -262,7 +260,6 @@ function DrawLightPost() {
     curve90Degrees(-0.7, 0.2, 0.08, 50, -0.2, 6, -0.095); // radius, width, thickness, smoothness, xOffset, yOffset, zOffset
 
 }
-
 // Function to create an extruded cylinder with a specified number of slices, radius, and height (Extruded shape)
 function extrudedCylinder(numSlices, radius, height) {
     var angle = 2 * Math.PI / numSlices;
@@ -280,19 +277,13 @@ function extrudedCylinder(numSlices, radius, height) {
         // Create side face triangles
         // Bottom edge (y = 0) to top edge (y = height)
         pointsArray.push(vec4(x1, 0, y1, 1.0));  // Bottom edge
-        colorsArray.push(colors[7]);  // Color for the side
         pointsArray.push(vec4(x1, height, y1, 1.0));  // Top edge
-        colorsArray.push(colors[7]);
         pointsArray.push(vec4(x2, height, y2, 1.0));  // Top edge
-        colorsArray.push(colors[7]);
 
         // Bottom edge (y = 0) to top edge (y = height)
         pointsArray.push(vec4(x1, 0, y1, 1.0));  // Bottom edge
-        colorsArray.push(colors[7]);
         pointsArray.push(vec4(x2, height, y2, 1.0));  // Top edge
-        colorsArray.push(colors[7]);
         pointsArray.push(vec4(x2, 0, y2, 1.0));  // Bottom edge
-        colorsArray.push(colors[7]);
     }
 }
 
@@ -309,11 +300,8 @@ function cylinder(numSlices, radius, height) {
 
         // Top face, now at y = height (above the base)
         pointsArray.push(vec4(0, height, 0, 1.0));  // Center of top face
-        colorsArray.push(colors[8]);
         pointsArray.push(vec4(x1, height, y1, 1.0));  // Edge of top face
-        colorsArray.push(colors[8]);
         pointsArray.push(vec4(x2, height, y2, 1.0));  // Edge of top face
-        colorsArray.push(colors[8]);
     }
 
     // Create the bottom of the cylinder (this stays at y = 0, the base)
@@ -325,11 +313,8 @@ function cylinder(numSlices, radius, height) {
 
         // Bottom face, now at y = 0 (fixed base)
         pointsArray.push(vec4(0, 0, 0, 1.0));  // Center of bottom face
-        colorsArray.push(colors[8]);
         pointsArray.push(vec4(x1, 0, y1, 1.0));  // Edge of bottom face
-        colorsArray.push(colors[8]);
         pointsArray.push(vec4(x2, 0, y2, 1.0));  // Edge of bottom face
-        colorsArray.push(colors[8]);
     }
 
     // Create the sides of the cylinder
@@ -341,18 +326,12 @@ function cylinder(numSlices, radius, height) {
 
         // Side faces, going from bottom (y = 0) to top (y = height)
         pointsArray.push(vec4(x1, 0, y1, 1.0));  // Bottom edge
-        colorsArray.push(colors[6]);
         pointsArray.push(vec4(x1, height, y1, 1.0));  // Top edge
-        colorsArray.push(colors[6]);
         pointsArray.push(vec4(x2, height, y2, 1.0));  // Top edge
-        colorsArray.push(colors[6]);
 
         pointsArray.push(vec4(x1, 0, y1, 1.0));  // Bottom edge
-        colorsArray.push(colors[6]);
         pointsArray.push(vec4(x2, height, y2, 1.0));  // Top edge
-        colorsArray.push(colors[6]);
         pointsArray.push(vec4(x2, 0, y2, 1.0));  // Bottom edge
-        colorsArray.push(colors[6]);
     }
 }
 
@@ -389,18 +368,12 @@ function sphere(numSlices, radius, xOffset, yOffset, zOffset) {
 
             // Add the four vertices of the current rectangle (two triangles)
             pointsArray.push(vec4(x1, y1, z1, 1.0));
-            colorsArray.push(colors[3]);
             pointsArray.push(vec4(x2, y2, z2, 1.0));
-            colorsArray.push(colors[3]);
             pointsArray.push(vec4(x3, y3, z3, 1.0));
-            colorsArray.push(colors[3]);
 
             pointsArray.push(vec4(x2, y2, z2, 1.0));
-            colorsArray.push(colors[3]);
             pointsArray.push(vec4(x4, y4, z4, 1.0));
-            colorsArray.push(colors[3]);
             pointsArray.push(vec4(x3, y3, z3, 1.0));
-            colorsArray.push(colors[3]);
         }
     }
 }
@@ -445,13 +418,12 @@ function adjustableRectangle(length, width, height, xOffset, yOffset, zOffset) {
         var face = faces[i];
         for (var j = 0; j < face.length; j++) {
             pointsArray.push(vertices[face[j]]);
-            colorsArray.push(colors[7]); // Assign a default color
         }
     }
 }
 
 // Tried to create adjustable shapes for more flexibility
-function curve90Degrees(radius, width, thickness, smoothness, xOffset, yOffset, zOffset, color) {
+function curve90Degrees(radius, width, thickness, smoothness, xOffset, yOffset, zOffset) {
     // Constrain smoothness to prevent invalid values
     smoothness = Math.max(0, smoothness);
 
@@ -489,62 +461,37 @@ function curve90Degrees(radius, width, thickness, smoothness, xOffset, yOffset, 
 
         // Create the top surface of the ribbon (outer curve to inner curve)
         pointsArray.push(o1);
-        colorsArray.push(colors[0]);
         pointsArray.push(i1);
-        colorsArray.push(colors[0]);
         pointsArray.push(i2);
-        colorsArray.push(colors[0]);
 
         pointsArray.push(o1);
-        colorsArray.push(colors[0]);
         pointsArray.push(i2);
-        colorsArray.push(colors[0]);
         pointsArray.push(o2);
-        colorsArray.push(colors[0]);
 
         // Create the bottom surface of the ribbon (extruding along the z-axis)
         pointsArray.push(vec4(o1[0], o1[1], o1[2] + width, 1.0));
-        colorsArray.push(colors[0]);
         pointsArray.push(vec4(i1[0], i1[1], i1[2] + width, 1.0));
-        colorsArray.push(colors[0]);
         pointsArray.push(vec4(i2[0], i2[1], i2[2] + width, 1.0));
-        colorsArray.push(colors[0]);
 
         pointsArray.push(vec4(o1[0], o1[1], o1[2] + width, 1.0));
-        colorsArray.push(colors[0]);
         pointsArray.push(vec4(i2[0], i2[1], i2[2] + width, 1.0));
-        colorsArray.push(colors[0]);
         pointsArray.push(vec4(o2[0], o2[1], o2[2] + width, 1.0));
-        colorsArray.push(colors[0]);
 
         // Create the sides connecting the top and bottom surfaces
         pointsArray.push(o1);
-        colorsArray.push(colors[0]);
         pointsArray.push(vec4(o1[0], o1[1], o1[2] + width, 1.0));
-        colorsArray.push(colors[0]);
         pointsArray.push(vec4(o2[0], o2[1], o2[2] + width, 1.0));
-        colorsArray.push(colors[0]);
 
         pointsArray.push(o1);
-        colorsArray.push(colors[0]);
         pointsArray.push(vec4(o2[0], o2[1], o2[2] + width, 1.0));
-        colorsArray.push(colors[0]);
         pointsArray.push(o2);
-        colorsArray.push(colors[0]);
 
         pointsArray.push(i1);
-        colorsArray.push(colors[0]);
         pointsArray.push(vec4(i1[0], i1[1], i1[2] + width, 1.0));
-        colorsArray.push(colors[0]);
         pointsArray.push(vec4(i2[0], i2[1], i2[2] + width, 1.0));
-        colorsArray.push(colors[0]);
 
         pointsArray.push(i1);
-        colorsArray.push(colors[0]);
         pointsArray.push(vec4(i2[0], i2[1], i2[2] + width, 1.0));
-        colorsArray.push(colors[0]);
         pointsArray.push(i2);
-        colorsArray.push(colors[0]);
     }
-
 }

@@ -29,7 +29,7 @@ var flag = true;
 
 var lightPosition = vec4(50, 100, 50, 1);
 
-var lightAmbient = vec4(0.8, 0.8, 0.8, 1.0 );
+var lightAmbient = vec4(0.7, 0.7, 0.7, 1.0 );
 var lightDiffuse = vec4(0.95, 0.95, 0.95, 1.0 );
 var lightSpecular = vec4( 1.0, 1.0, 1.0, 1.0 );
 
@@ -42,9 +42,9 @@ var pointsArray = [];
 var colorsArray = [];
 var normalsArray = [];
 
-var numWallPoints = 0; // Number of points for the wall
-var numLightPostPoints = 0; // Number of points for the light post
 var currentIndex = 0; // Used to track objects in the points and colors arrays
+
+let lampColorToggled = false; // State variable to track if the function has been called
 
 // Vertex positions for a cube (brick)
 var v = [
@@ -177,8 +177,22 @@ window.onload = function init() {
             AllInfo.theta += (e.y - AllInfo.mousePosOnClickY)/100;
             AllInfo.mousePosOnClickY = e.y;
         }
+
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'a' || event.key === 'A') {
+                // Toggle the state on key press
+                if (lampColorToggled) {
+                    // Call ColorLampPostBulb again (or reset it if you need to) to toggle the color change off
+                    lampColorToggled = false;  // Reset the state
+                } else {
+                    lampColorToggled = true;  // Set state to true to avoid multiple calls
+                }
+            }
+        });
+
         render();
     });
+
     render();
 }
 
@@ -258,7 +272,8 @@ function render() {
     //requestAnimationFrame(render);
 
     // Debugging
-    console.log("Points: " + pointsArray.length + "\nColors: " + colorsArray.length + "\nCurrent Index: " + currentIndex);
+    console.log("Points: " + pointsArray.length + "\nColors: " + colorsArray.length + "\nCurrent Index: " + currentIndex + '\n');
+    console.log("Animation Toggle: " + lampColorToggled + '\n');
     currentIndex = 0; // Reset the current index for the next frame
 }
 
@@ -311,13 +326,18 @@ function Newell(vertices)
 
 
 // Flashing lamp code
-var lampLightColor = vec4(1.0, 1.0, 0.8, 1.0); // Light yellow
-var lampDarkColor = vec4(0.5, 0.5, 0.3, 1.0); // Dark yellow
+var lampLightColor = vec4(0.8, 0.8, 0.8, 1.0); // Light yellow
+var lampDarkColor = vec4(0.0, 0.0, 0.0, 1.0); // Dark yellow
 var lampCurrentColor = lampLightColor; // Start with light color
+var time = 0; // Variable to track time for sine wave
 
-var isLampLight = true; // State to toggle between light and dark
 setInterval(() => {
-    isLampLight = !isLampLight; // Toggle state
-    lampCurrentColor = isLampLight ? lampLightColor : lampDarkColor; // Update color
+    time += 0.1; // Increment time (adjust speed of flashing)
+    var sineValue = Math.sin(time); // Get sine value (from -1 to 1)
+    var intensity = (sineValue + 1) / 2; // Map the sine wave to a range of 0 to 1
+    
+    // Interpolate between light and dark colors based on sine wave intensity
+    lampCurrentColor = mix(lampDarkColor, lampLightColor, intensity); 
+    
     render(); // Re-render the scene to apply the new color
-}, 500); // Change every 500 milliseconds (adjust as needed)
+}, 16); // Update roughly every 16ms for smooth animation (60fps)
