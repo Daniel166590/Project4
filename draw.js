@@ -299,7 +299,6 @@ function RenderLightPost(lampColor) {
     }
 }
 
-
 // Function to render the whole wall with hedge
 function RenderWall(rows, cols, brickWidth, brickHeight, xPosition, yPosition, zPosition, setScale) {
     let xOffset = xPosition; // Center horizontally

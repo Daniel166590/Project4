@@ -2,15 +2,14 @@
 // Project 4: Stage I
 // Objects: Brick Hedge Wall, Light Post
 
-var canvas;
-var gl;
-var image;
-var program;
+// TODO
+//   Textures: Wall, Road, Bench, Vending Machine
+//   Objects To Add: Bench, Fire Hydrant, (Opt: road sign, trash bag?)
+//   Sounds to add: Flickering for the light and/or a car noise
+//   Add ability to reset the camera with "b"
 
-var eye ;
-var near = -30;
-var far = 30;
-//var dr = 5.0 * Math.PI/180.0;
+var canvas, gl, image, program;
+var eye, near = -30, far = 30;
 
 var left = -2.0;
 var right = 2.0;
@@ -23,24 +22,42 @@ var modelViewStack = [];
 const at = vec3(0.0, 0.0, 0.0);
 const up = vec3(0.0, 1.0, 0.0);
 
-var modelView, projection;
-var viewerPos;
+var modelView, projection, viewerPos;
 var flag = true;
 
-var lightPosition = vec4(50, 100, 50, 1);
+var lightPosition = vec4(-2, -3, 1, 1);
 
-var lightAmbient = vec4(0.7, 0.7, 0.7, 1.0 );
-var lightDiffuse = vec4(0.95, 0.95, 0.95, 1.0 );
-var lightSpecular = vec4( 1.0, 1.0, 1.0, 1.0 );
-
-var materialAmbient = vec4( .2, .2, .2, 1.0 );
-var materialDiffuse = vec4( 0.0, 0.5, 1, 1.0);
-var materialSpecular = vec4( 0, 0, 1, 1.0 );
-var materialShininess = 50.0;
+var lightAmbient, lightDiffuse, lightSpecular;
+var materialAmbient, materialDiffuse, materialSpecular, materialShininess;
+setLightProperties(vec4(0.7, 0.7, 0.7, 1.0 ),
+                   vec4(0.95, 0.95, 0.95, 1.0 ),
+                   vec4( 48/225, 51/255, 107/255, 1.0 )
+)
+setMaterialProperties(vec4( .2, .2, .2, 1.0 ),
+                      vec4( 0.0, 0.5, 1, 1.0),
+                      vec4( 0, 0, 1, 1.0 ),
+                      50.0
+)
 
 var pointsArray = [];
 var colorsArray = [];
 var normalsArray = [];
+var texCoord = [
+    vec2(0,  0), // top left
+    vec2(0, -1), // bottom left
+    vec2(1,  0), // top right
+];
+
+const TEX_FILES = [
+    "textures/concrete.png",
+    "textures/slate.png",
+    "textures/sprunk.jpg",
+    "textures/wood.png"
+];
+var textures = [];
+
+
+var car_pos = [7, 0.5, 5];
 
 var currentIndex = 0; // Used to track objects in the points and colors arrays
 
@@ -103,11 +120,8 @@ window.onload = function init() {
     if ( !gl ) { alert( "WebGL isn't available" ); }
 
     gl.viewport( 0, 0, canvas.width, canvas.height );
-    //
     //  Load shaders and initialize attribute buffers
-    //
-    // !!
-    // program needs to be global
+    //  program needs to be global
     program = initShaders( gl, "vertex-shader", "fragment-shader" );
     gl.useProgram( program );
 
@@ -127,6 +141,17 @@ window.onload = function init() {
 	var vPosition = gl.getAttribLocation( program, "vPosition");
     gl.vertexAttribPointer( vPosition, 4, gl.FLOAT, false, 0, 0);
     gl.enableVertexAttribArray( vPosition);
+
+    // texture buffer
+    var tBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, tBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, flatten(texCoord), gl.STATIC_DRAW);
+
+    var vTexCoord = gl.getAttribLocation(program, "vTexCoord");
+    gl.vertexAttribPointer(vTexCoord, 2, gl.FLOAT, false, 0, 0);
+    // gl.enableVertexAttribArray(vTexCoord);
+
+    // addTextures()
 
     modelViewMatrixLoc = gl.getUniformLocation( program, "modelViewMatrix" );
     projectionMatrixLoc = gl.getUniformLocation( program, "projectionMatrix" );
@@ -177,21 +202,42 @@ window.onload = function init() {
             AllInfo.theta += (e.y - AllInfo.mousePosOnClickY)/100;
             AllInfo.mousePosOnClickY = e.y;
         }
-
-        document.addEventListener('keydown', function(event) {
-            if (event.key === 'a' || event.key === 'A') {
-                // Toggle the state on key press
-                if (lampColorToggled) {
-                    // Call ColorLampPostBulb again (or reset it if you need to) to toggle the color change off
-                    lampColorToggled = false;  // Reset the state
-                } else {
-                    lampColorToggled = true;  // Set state to true to avoid multiple calls
-                }
-            }
-        });
-
         render();
     });
+
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'a' || event.key === 'A') {
+            // Toggle the state on key press
+            if (lampColorToggled) {
+                // Call ColorLampPostBulb again (or reset it if you need to) to toggle the color change off
+                lampColorToggled = false;  // Reset the state
+            } else {
+                lampColorToggled = true;  // Set state to true to avoid multiple calls
+            }
+        }
+
+        // change the lightPosition values
+        if (event.key === 'q') // ++X
+            lightPosition[0]++;
+        if (event.key === 'e') // --X
+            lightPosition[0]--;
+        if (event.key === 'w') // ++Y
+            lightPosition[1]++;
+        if (event.key === 'x') // --Y
+            lightPosition[1]--;
+        if (event.key === 'a') // ++Z
+            lightPosition[2]++;
+        if (event.key === 'd') // --Z
+            lightPosition[2]--;
+
+        if(event.key === 'm')
+            car_pos[0]++;
+        if(event.key === 'n')
+            car_pos[0]--;
+        console.log(lightPosition, car_pos)
+        
+    });
+
 
     render();
 }
@@ -249,7 +295,7 @@ function render() {
     drawVendingMachine([-3, 0, 2], [0, 0, 1, 0], [4, 4, 4]); // translate, rotate, scale
 
     // draw car
-    drawCar([7, 0.5, 5], [90, 0, 1, 0], [5, 5, 5]); // translate, rotate, scale
+    drawCar(car_pos, [90, 0, 1, 0], [5, 5, 5]); // translate, rotate, scale
 
     // change color and draw traffic cone
     drawSurfaceRevolution([10, 0, 16], [0, 0, 1, 0], [2, 2, 2]); // translate, rotate, scale
@@ -272,8 +318,8 @@ function render() {
     //requestAnimationFrame(render);
 
     // Debugging
-    console.log("Points: " + pointsArray.length + "\nColors: " + colorsArray.length + "\nCurrent Index: " + currentIndex + '\n');
-    console.log("Animation Toggle: " + lampColorToggled + '\n');
+    // console.log("Points: " + pointsArray.length + "\nColors: " + colorsArray.length + "\nCurrent Index: " + currentIndex + '\n');
+    // console.log("Animation Toggle: " + lampColorToggled + '\n');
     currentIndex = 0; // Reset the current index for the next frame
 }
 
@@ -284,6 +330,27 @@ function scale4(a, b, c) {
    result[1][1] = b;
    result[2][2] = c;
    return result;
+}
+
+function setLightProperties(ambient=lightAmbient,
+    diff=lightDiffuse,
+    specular=lightSpecular)
+{
+    lightAmbient = ambient;
+    lightDiffuse = diff;
+    lightSpecular = specular;
+}
+
+function setMaterialProperties(
+    ambient=materialAmbient,
+    diff=materialDiffuse,
+    specular=materialSpecular,
+    shine = materialShininess)
+{
+    materialAmbient = ambient;
+    materialDiffuse = diff;
+    materialSpecular = specular;
+    materialShininess = shine;
 }
 
 function SetupLightingMaterial()
@@ -323,7 +390,37 @@ function Newell(vertices)
    return (normalize(vec3(x, y, z)));
 }
 
+function addTextures() {
+    for (let index = 0; index < TEX_FILES.length; index++) { 
+        textures[index] = gl.createTexture();
+        textures[index].image = new Image();
+        textures[index].image.src = TEX_FILES[index];
+        textures[index].image.onload = function() {loadTexture(textures[index], gl.TEXTURE0);}    
+    }
+}
 
+function loadTexture(texture, whichTexture) 
+{
+    // Flip the image's y axis
+    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+
+    // Enable texture unit passed in as parameter "texture"
+    gl.activeTexture(whichTexture);
+
+    // bind the texture object to the target
+    gl.bindTexture( gl.TEXTURE_2D, texture);
+
+    // set the texture image
+    gl.texImage2D( gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, texture.image );
+
+    // version 1 (combination needed for images that are not powers of 2
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+
+    // set the texture parameters
+    gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+}
 
 // Flashing lamp code
 var lampLightColor = vec4(0.8, 0.8, 0.8, 1.0); // Light yellow

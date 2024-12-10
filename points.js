@@ -8,18 +8,24 @@
 function tri(a, b, c, colorIndex = 1) {
     let normal = Newell([a, b, c]);
     pointsArray.push(a);
-    normalsArray.push(normal);
     pointsArray.push(b);
-    normalsArray.push(normal);
     pointsArray.push(c);
-    normalsArray.push(normal);
+    for (let i = 0; i < 3; i++)
+        normalsArray.push(normal);
 }
 
 function quad(a, b, c, d, color = 1) {
-    tri(a, b, c, color);
-    tri(c, d, a, color);
-}
+    let normal = Newell([a, b, c, d]);
+    pointsArray.push(a);
+    pointsArray.push(b);
+    pointsArray.push(c);
+    pointsArray.push(a);
+    pointsArray.push(c);
+    pointsArray.push(d);
+    for (let i = 0; i < 6; i++)
+        normalsArray.push(normal);
 
+}
 // define the faces
 function makeCubePoints() {
     let v = [
@@ -32,12 +38,13 @@ function makeCubePoints() {
         vec4( 1, 1, 0, 1),  // G 6
         vec4( 0, 1, 1, 1),  // H 7
     ];
-    quad(v[2], v[0], v[3], v[1], 1);
-    quad(v[6], v[4], v[7], v[5], 2);
-    quad(v[5], v[7], v[3], v[1], 3);
-    quad(v[6], v[4], v[0], v[2], 4);
-    quad(v[5], v[6], v[2], v[1], 5);
-    quad(v[7], v[4], v[0], v[3], 5);
+    // quad(v[2], v[0], v[3], v[1], 1);
+    quad(v[0], v[2], v[1], v[3], 1); // bottom
+    quad(v[6], v[4], v[7], v[5], 2); // top
+    quad(v[3], v[1], v[5], v[7], 3); // +z side
+    quad(v[6], v[2], v[0], v[4], 4); // -z side
+    quad(v[5], v[1], v[2], v[6], 5); // +x side
+    quad(v[7], v[4], v[0], v[3], 5); // -x side
 }
 
 function makeCarPoints() {
@@ -60,10 +67,11 @@ function makeCarPoints() {
     ];
 
     quad(v[2], v[0],  v[3], v[1], 1); // bottom
+    // quad(v[6], v[4],  v[7], v[5], 2); // lid
     quad(v[6], v[4],  v[7], v[5], 2); // lid
-    quad(v[6], v[5],  v[9], v[8], 5); // windshield
-    quad(v[9], v[11], v[10], v[8], 2); // top
-    quad(v[11], v[10], v[2], v[1], 5); // back
+    quad(v[9], v[8],  v[6], v[5], 5); // windshield
+    quad(v[9], v[8], v[10], v[11], 2); // top
+    quad(v[11], v[10], v[1], v[2], 5); // back
 
     quad(v[11], v[10], v[2], v[1], 5); // side
     quad(v[11], v[9], v[5], v[1], 3); // side
