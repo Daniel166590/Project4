@@ -3,7 +3,7 @@
 // Objects: Brick Hedge Wall, Light Post
 
 // TODO
-//   Textures: Wall, Road, Bench, Vending Machine
+//   Textures: Road, Bench, Vending Machine
 //   Objects To Add: Bench, Fire Hydrant, (Opt: road sign, trash bag?)
 //   Sounds to add: Flickering for the light and/or a car noise
 //   Add ability to reset the camera with "b"
@@ -43,8 +43,15 @@ var pointsArray = [];
 var colorsArray = [];
 var normalsArray = [];
 var texCoord = [];
-textureCube();
-textureCube();
+textureCube(); // for wall brick
+textureCube(); // for wall greenery
+textureCube(); // for lamp post base
+textureNothing(7386); // skip lamp post
+textureCube(); // for vending machine
+textureNothing(63+249); // skip car
+textureNothing(138); // skip cone
+textureCube(); // sidewalk
+textureCube(); // road
 
 
 var car_pos = [7, 0.5, 5];
@@ -252,11 +259,12 @@ function render() {
     
     // RENDERING OBJECTS
     modelViewStack.push(modelViewMatrix); // save 1
-
     modelViewStack.push(modelViewMatrix); // save 2
+    
     let wall_t = translate(-4, 0, 15);
     let wall_r = rotate(90, 0, 1, 0);
     let wall_s = scale4(2, 2, 2);
+
     modelViewMatrix = mult(mult(mult(modelViewMatrix, wall_t), wall_r), wall_s);
     RenderWall(10, 15, 0.65, 0.35, 3, 0, 0, 0.3); // #rows, #cols, brickWidth, brickHeight, xPosition, yPosition, zPosition, scale
     modelViewMatrix = modelViewStack.pop(); // restore 2
@@ -265,12 +273,12 @@ function render() {
     modelViewStack.push(); // save 2
 
     let lamp_t = translate(4, 0.5, -6);
-    let lamp_r = rotate(180, 0, 1, 0);
+    lamp_r = rotate(180, 0, 1, 0);
     let lamp_s = scale4(1.5, 1.5, 1.5);
     
     modelViewMatrix = mult(mult(mult(modelViewMatrix, lamp_t), lamp_r), lamp_s);
-
     RenderLightPost(lampCurrentColor);
+
     modelViewMatrix = modelViewStack.pop(); // restore 2
 
     drawVendingMachine([-3, 0, 2], [0, 0, 1, 0], [4, 4, 4]); // translate, rotate, scale

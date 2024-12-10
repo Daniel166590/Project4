@@ -35,11 +35,14 @@ function drawVendingMachine(trans = [0, 0, 0], rot = [0, 0, 1, 0], scale = [1, 1
 
     gl.uniform1i(gl.getUniformLocation(program, 'texture'), 3)
     // draw body
-    materialAmbient = vec4( .2, .2, .2, 1.0 );
-    materialDiffuse = vec4( 122/255, 122/255, 122/255, 1.0);
-    materialSpecular = vec4( 189/255, 182/255, 175/255, 1.0 );
-    materialShiness=20;
-    SetupLightingMaterial();    
+    setMaterialProperties(
+        vec4( .2, .2, .2, 1.0 ),
+        vec4( 122/255, 122/255, 122/255, 1.0),
+        vec4( 189/255, 182/255, 175/255, 1.0 ),
+        20
+    );
+    SetupLightingMaterial();
+    changeTexture(Textures.PLASTIC);
 
     modelViewStack.push(modelViewMatrix);
     modelViewMatrix = mult(mult(mult(modelViewMatrix, t), r), s);
@@ -62,7 +65,8 @@ function drawVendingMachine(trans = [0, 0, 0], rot = [0, 0, 1, 0], scale = [1, 1
         materialDiffuse = vec4( 122/255, 122/255, 122/255, 1.0);
         materialShiness=20;
 
-        SetupLightingMaterial();    
+        SetupLightingMaterial();
+        changeTexture(Textures.PLASTIC);
         drawCube([0, i, .05], rot, scale);
 
         // draw things on shelves
@@ -72,6 +76,7 @@ function drawVendingMachine(trans = [0, 0, 0], rot = [0, 0, 1, 0], scale = [1, 1
                 if (counter >= colors.length) {counter = 0;}
                 materialDiffuse = colors[counter];
                 materialShiness=5;
+                changeTexture(Textures.SPRUNK);
 
                 SetupLightingMaterial();
                 drawCube([(j + .05), (i + .01), (k + 0.28)], rot, item_scale);
@@ -80,6 +85,7 @@ function drawVendingMachine(trans = [0, 0, 0], rot = [0, 0, 1, 0], scale = [1, 1
         }
     }
 
+    changeTexture(null); // revert to no texture
     modelViewMatrix = modelViewStack.pop();
     currentIndex += 36;
 }
@@ -196,6 +202,7 @@ function RenderRoad() {
     SetupLightingMaterial();
 
     // draw sidewalk
+    changeTexture(Textures.CONCRETE);
     gl.drawArrays(gl.TRIANGLES, currentIndex, 36);
     currentIndex += 36;
 
@@ -204,6 +211,7 @@ function RenderRoad() {
     SetupLightingMaterial();
 
     // draw road
+    changeTexture(Textures.PEBBLE)
     gl.drawArrays(gl.TRIANGLES, currentIndex, 36);
     currentIndex += 36;
 
@@ -233,8 +241,10 @@ function RenderLightPost(lampColor) {
     gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(lightPostModelViewMatrix));
 
     // Draw the light post (this assumes you have already set the color for the light post)
+    // drawing base of post
     materialDiffuse = colors[8];
     SetupLightingMaterial();
+    changeTexture(Textures.SLATE);
     gl.drawArrays(gl.TRIANGLES, currentIndex, 36); // 36 vertices for a cube
     currentIndex += 36;
 
@@ -322,7 +332,7 @@ function RenderWall(rows, cols, brickWidth, brickHeight, xPosition, yPosition, z
             // Pass the transformation matrix to the shader
             gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(brickModelViewMatrix));
 
-            gl.uniform1i(gl.getUniformLocation(program, "texture"), 1); // adds the texture
+            changeTexture(Textures.SLATE)
             // Draw the brick (this assumes you have already set the color for the brick)
             gl.drawArrays(gl.TRIANGLES, currentIndex, 36); // 36 vertices for a cube
 
@@ -338,6 +348,7 @@ function RenderWall(rows, cols, brickWidth, brickHeight, xPosition, yPosition, z
 
     materialDiffuse = vec4(0.15, 0.4, 0.15, 1.0);
     SetupLightingMaterial();
+    changeTexture(Textures.GRASS);
 
     xOffset = xPosition + ((cols * brickWidth) / 2) - 0.32; // Start hedge bricks at the same position as the gray bricks
     yOffset = yPosition + 0.01; // Slight offset for hedge bricks
@@ -350,8 +361,6 @@ function RenderWall(rows, cols, brickWidth, brickHeight, xPosition, yPosition, z
         // Pass the transformation matrix to the shader
         gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(brickModelViewMatrix));
 
-
-        gl.uniform1i(gl.getUniformLocation(program, "texture"), 4); // adds the texture
         // Draw the brick (this assumes you have already set the color for the brick)
         gl.drawArrays(gl.TRIANGLES, currentIndex, 36); // 36 vertices for a cube
 

@@ -1,6 +1,16 @@
 // textures.js
 // functions related to texturing
 
+const Textures = {
+    CONCRETE:   0,
+    SLATE:      1,
+    SPRUNK:     2,
+    WOOD:       3,
+    GRASS:      4,
+    PLASTIC:    5,
+    PEBBLE:     6,
+    NONE:    null
+}
 // binds the images to gl.TEXTURE$,
 // if you want more textures, add path to TEX_FILES, and make GLTEX match the amount
 function addTextures() {
@@ -10,9 +20,13 @@ function addTextures() {
         "textures/slate-smaller.png", // made slate texture smaller to reduce noisy look
         "textures/sprunk.jpg",
         "textures/wood.png",
-        "textures/grass.png"
+        "textures/grass.png",
+        "textures/plastic.png",
+        "textures/pebble.png",
     ];
-    const GLTEX = [gl.TEXTURE0, gl.TEXTURE1, gl.TEXTURE2, gl.TEXTURE3, gl.TEXTURE4]
+    const GLTEX = [
+        gl.TEXTURE0, gl.TEXTURE1, gl.TEXTURE2,
+        gl.TEXTURE3, gl.TEXTURE4, gl.TEXTURE5, gl.TEXTURE6]
     var textures = [];
     for (let index = 0; index < TEX_FILES.length; index++) { 
         textures[index] = gl.createTexture();
@@ -45,15 +59,30 @@ function loadTexture(texture, whichTexture)
     gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 }
 
+function changeTexture(texture_index) {
+    gl.uniform1i(gl.getUniformLocation(program, "texture"), texture_index);
+}
+
 // Adds points to TexCoords so that a cube will be textured on all sides
 function textureCube() {
     for (let i=0; i < 6; i++) {
         texCoord.push(vec2(0, 1)); // top left
         texCoord.push(vec2(0, 0)); // bottom left
-        texCoord.push(vec2(1, 1)); // top right
-
-        texCoord.push(vec2(0, 0)); // bottom left
+        texCoord.push(vec2(1, 0)); // bottom right
+        
+        texCoord.push(vec2(0, 1)); // top left
         texCoord.push(vec2(1, 0)); // bottom right
         texCoord.push(vec2(1, 1)); // top right
     }
+}
+
+function textureQuad(amnt) {
+
+}
+
+// Adds points to texCoods but they're all [0, 0],
+// which will skip an amount of points supplied so they wont get textured.
+function textureNothing(amnt) {
+    for (let i=0; i<amnt; i++)
+    texCoord.push(vec2(0, 0))
 }
