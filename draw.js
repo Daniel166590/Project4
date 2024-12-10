@@ -32,6 +32,8 @@ function drawVendingMachine(trans = [0, 0, 0], rot = [0, 0, 1, 0], scale = [1, 1
         vec4(.64, 1, 0, 1),
         vec4(128/255, 0, 128/255, 1)
     ];
+
+    gl.uniform1i(gl.getUniformLocation(program, 'texture'), 3)
     // draw body
     materialAmbient = vec4( .2, .2, .2, 1.0 );
     materialDiffuse = vec4( 122/255, 122/255, 122/255, 1.0);
@@ -320,6 +322,7 @@ function RenderWall(rows, cols, brickWidth, brickHeight, xPosition, yPosition, z
             // Pass the transformation matrix to the shader
             gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(brickModelViewMatrix));
 
+            gl.uniform1i(gl.getUniformLocation(program, "texture"), 1); // adds the texture
             // Draw the brick (this assumes you have already set the color for the brick)
             gl.drawArrays(gl.TRIANGLES, currentIndex, 36); // 36 vertices for a cube
 
@@ -347,10 +350,12 @@ function RenderWall(rows, cols, brickWidth, brickHeight, xPosition, yPosition, z
         // Pass the transformation matrix to the shader
         gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(brickModelViewMatrix));
 
-         // Draw the brick (this assumes you have already set the color for the brick)
-         gl.drawArrays(gl.TRIANGLES, currentIndex, 36); // 36 vertices for a cube
 
-         yOffset += brickHeight;
+        gl.uniform1i(gl.getUniformLocation(program, "texture"), 4); // adds the texture
+        // Draw the brick (this assumes you have already set the color for the brick)
+        gl.drawArrays(gl.TRIANGLES, currentIndex, 36); // 36 vertices for a cube
+
+        yOffset += brickHeight;
     }
     currentIndex += 36; // Move past the hedge bricks
 }

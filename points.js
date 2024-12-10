@@ -193,6 +193,12 @@ function SurfaceRevPoints()
 function Draw() {
     DrawWall();
     DrawLightPost();
+    makeCubePoints();
+    makeCarPoints();
+    extrudedCircle();
+    SurfaceRevPoints();
+    DrawRoad();
+    DrawTrashCan();
 }
 
 function DrawTrashCan(numSlices = 30, radius = 1, height = 2) {

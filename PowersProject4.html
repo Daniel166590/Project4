@@ -64,13 +64,14 @@ uniform sampler2D texture;
 void
 main()
 {
-   gl_FragColor = texture2D(texture, fTexCoord) + fColor;
+   gl_FragColor = texture2D(texture, fTexCoord) * fColor;
 }
 </script>
 
 <script type="text/javascript" src="../Common/webgl-utils.js"></script>
 <script type="text/javascript" src="../Common/initShaders.js"></script>
 <script type="text/javascript" src="../Common/MV.js"></script>
+<script type="text/javascript" src="./tex.js"></script>
 <script type="text/javascript" src="./points.js"></script>
 <script type="text/javascript" src="./draw.js"></script>
 <script type="text/javascript" src="./PowersProject4.js"></script>

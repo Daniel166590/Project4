@@ -42,19 +42,9 @@ setMaterialProperties(vec4( .2, .2, .2, 1.0 ),
 var pointsArray = [];
 var colorsArray = [];
 var normalsArray = [];
-var texCoord = [
-    vec2(0,  0), // top left
-    vec2(0, -1), // bottom left
-    vec2(1,  0), // top right
-];
-
-const TEX_FILES = [
-    "textures/concrete.png",
-    "textures/slate.png",
-    "textures/sprunk.jpg",
-    "textures/wood.png"
-];
-var textures = [];
+var texCoord = [];
+textureCube();
+textureCube();
 
 
 var car_pos = [7, 0.5, 5];
@@ -95,7 +85,7 @@ var colors = [
 var AllInfo = {
 
     // Camera pan control variables.
-    zoomFactor : 10,
+    zoomFactor : 4,
     translateX : 0,
     translateY : 0,
 
@@ -126,13 +116,6 @@ window.onload = function init() {
     gl.useProgram( program );
 
     Draw();
-    makeCubePoints();
-    makeCarPoints();
-    extrudedCircle();
-    SurfaceRevPoints();
-    DrawRoad();
-    DrawTrashCan();
-
 
     var vBuffer = gl.createBuffer();
     gl.bindBuffer( gl.ARRAY_BUFFER, vBuffer);
@@ -149,9 +132,9 @@ window.onload = function init() {
 
     var vTexCoord = gl.getAttribLocation(program, "vTexCoord");
     gl.vertexAttribPointer(vTexCoord, 2, gl.FLOAT, false, 0, 0);
-    // gl.enableVertexAttribArray(vTexCoord);
+    gl.enableVertexAttribArray(vTexCoord);
 
-    // addTextures()
+    addTextures()
 
     modelViewMatrixLoc = gl.getUniformLocation( program, "modelViewMatrix" );
     projectionMatrixLoc = gl.getUniformLocation( program, "projectionMatrix" );
@@ -162,7 +145,7 @@ window.onload = function init() {
         if (e.wheelDelta > 0) {
             AllInfo.zoomFactor = Math.max(0.1, AllInfo.zoomFactor - 0.1);
         } else {
-            AllInfo.zoomFactor += 0.1;
+            AllInfo.zoomFactor += 0.5;
         }
         render();
     });
@@ -276,7 +259,6 @@ function render() {
     let wall_s = scale4(2, 2, 2);
     modelViewMatrix = mult(mult(mult(modelViewMatrix, wall_t), wall_r), wall_s);
     RenderWall(10, 15, 0.65, 0.35, 3, 0, 0, 0.3); // #rows, #cols, brickWidth, brickHeight, xPosition, yPosition, zPosition, scale
-
     modelViewMatrix = modelViewStack.pop(); // restore 2
 
     // translating and rendering light post
@@ -291,13 +273,8 @@ function render() {
     RenderLightPost(lampCurrentColor);
     modelViewMatrix = modelViewStack.pop(); // restore 2
 
-    // draw vending machine
     drawVendingMachine([-3, 0, 2], [0, 0, 1, 0], [4, 4, 4]); // translate, rotate, scale
-
-    // draw car
     drawCar(car_pos, [90, 0, 1, 0], [5, 5, 5]); // translate, rotate, scale
-
-    // change color and draw traffic cone
     drawSurfaceRevolution([10, 0, 16], [0, 0, 1, 0], [2, 2, 2]); // translate, rotate, scale
     
     // draw road
@@ -388,38 +365,6 @@ function Newell(vertices)
    }
 
    return (normalize(vec3(x, y, z)));
-}
-
-function addTextures() {
-    for (let index = 0; index < TEX_FILES.length; index++) { 
-        textures[index] = gl.createTexture();
-        textures[index].image = new Image();
-        textures[index].image.src = TEX_FILES[index];
-        textures[index].image.onload = function() {loadTexture(textures[index], gl.TEXTURE0);}    
-    }
-}
-
-function loadTexture(texture, whichTexture) 
-{
-    // Flip the image's y axis
-    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
-
-    // Enable texture unit passed in as parameter "texture"
-    gl.activeTexture(whichTexture);
-
-    // bind the texture object to the target
-    gl.bindTexture( gl.TEXTURE_2D, texture);
-
-    // set the texture image
-    gl.texImage2D( gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, texture.image );
-
-    // version 1 (combination needed for images that are not powers of 2
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-
-    // set the texture parameters
-    gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-    gl.texParameteri( gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 }
 
 // Flashing lamp code
