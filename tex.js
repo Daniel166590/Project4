@@ -63,6 +63,19 @@ function changeTexture(texture_index) {
     gl.uniform1i(gl.getUniformLocation(program, "texture"), texture_index);
 }
 
+function AddTexPoints() {
+    textureCube(); // for wall brick
+    textureCube(); // for wall greenery
+    textureCube(); // for lamp post base
+    textureNothing(7386); // skip lamp post
+    textureCube(); // for vending machine
+    textureNothing(63+249); // skip car
+    textureNothing(138); // skip cone
+    textureCube(); // sidewalk
+    textureCube(); // road
+    textureNothing(18000);
+}
+
 // Adds points to TexCoords so that a cube will be textured on all sides
 function textureCube() {
     for (let i=0; i < 6; i++) {

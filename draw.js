@@ -217,12 +217,15 @@ function RenderRoad() {
 
     // change color
     materialDiffuse = colors[3];
+    materialAmbient = colors[3];
     SetupLightingMaterial();
 
     // draw road
+    changeTexture(Textures.NONE);
     gl.drawArrays(gl.TRIANGLES, currentIndex, 180);
     currentIndex += 180;
 
+    materialAmbient = vec4(24/255, 19/255, 28/255, 1);
 }
 
 function RenderLightPost(lampColor) {
