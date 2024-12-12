@@ -199,6 +199,8 @@ function Draw() {
     SurfaceRevPoints();
     DrawRoad();
     DrawTrashCan();
+    DrawBench();
+    DrawFireHydrant();
 }
 
 function DrawTrashCan(numSlices = 30, radius = 1, height = 2) {
@@ -247,8 +249,6 @@ function DrawWall() {
     quad(v[6], v[5], v[1], v[2], v[9]); // Top face
     quad(v[4], v[5], v[6], v[7], v[9]); // Back face
     quad(v[5], v[4], v[0], v[1], v[9]); // Left face
-
-    numWallPoints = 72; // 36 vertices for the bricks, 36 for the green bricks
 }
 
 function DrawLightPost() {
@@ -274,6 +274,47 @@ function DrawLightPost() {
     curve90Degrees(-0.7, 0.2, 0.08, 50, -0.2, 6, -0.095); // radius, width, thickness, smoothness, xOffset, yOffset, zOffset
 
 }
+
+// Function to generate the points for a bench
+function DrawBench() {
+    // Create the bench seat
+    adjustableRectangle(1, 5, 0.1, 0, 0, 0); // length, width, height, xOffset, yOffset, zOffset
+
+    // Create the bench legs
+    adjustableRectangle(0.1, 0.1, 0.8, 0, -0.45, -2.45); // length, width, height, xOffset, yOffset, zOffset
+    adjustableRectangle(0.1, 0.1, 0.8, 0, -0.45, 2.45); // length, width, height, xOffset, yOffset, zOffset
+
+    // Create the bench arms
+    // Right arm
+    curve90Degrees(0.5, 0.1, 0.1, 50, -0.05, 0.0, -2.45); // radius, width, thickness, smoothness, xOffset, yOffset, zOffset
+    adjustableRectangle(0.5, 0.1, 0.1, -0.25, 0.5, -2.4); // length, width, height, xOffset, yOffset, zOffset
+
+    // Left arm
+    curve90Degrees(0.5, 0.1, 0.1, 50, -0.05, 0.0, 2.35); // radius, width, thickness, smoothness, xOffset, yOffset, zOffset
+    adjustableRectangle(0.5, 0.1, 0.1, -0.25, 0.5, 2.4); // length, width, height, xOffset, yOffset, zOffset
+
+    // Create the back of the bench
+    adjustableRectangle(0.1, 5, 0.5, -0.45, 0.5, 0); // length, width, height, xOffset, yOffset, zOffset
+}
+
+// Function to generate the points for a fire hydrant
+function DrawFireHydrant() {
+    // Create the base of the fire hydrant
+    extrudedCylinder(100, 0.5, 2.5); // numSlices, radius, height
+    // Create the top rim of the fire hydrant
+    cylinder(100, 0.65, 0.25, 0, 2.25, 0); // numSlices, radius, height, xOffset, yOffset, zOffset
+    // Create the top of the fire hydrant
+    sphere(25, 0.5, 0, 2.5, 0); // numSlices, radius, xOffset, yOffset, zOffset
+    // Create the tip of the fire hydrant
+    cylinder(100, 0.1, 0.1, 0, 2.95, 0); // numSlices, radius, height, xOffset, yOffset, zOffset
+    // Create the flared base of the fire hydrant
+    cylinder(100, 0.65, 0.5, 0, 0.1, 0); // numSlices, radius, height, xOffset, yOffset, zOffset
+    // Create the connector of the fire hydrant
+    cylinder(100, 0.3, 0.4, 0.5, 0, 0); // numSlices, radius, height, xOffset, yOffset, zOffset
+    // Create the tip of the connector
+    cylinder(100, 0.15, 0.2, 0.5, -0.2, 0); // numSlices, radius, height, xOffset, yOffset, zOffset
+}
+
 // Function to create an extruded cylinder with a specified number of slices, radius, and height (Extruded shape)
 function extrudedCylinder(numSlices, radius, height) {
     var angle = 2 * Math.PI / numSlices;
@@ -301,51 +342,51 @@ function extrudedCylinder(numSlices, radius, height) {
     }
 }
 
-function cylinder(numSlices, radius, height) {
+function cylinder(numSlices, radius, height, xOffset = 0, yOffset = 0, zOffset = 0) {
     // Create the cylinder
     var angle = 2 * Math.PI / numSlices;
 
     // Create the top of the cylinder
     for (var i = 0; i < numSlices; i++) {
-        var x1 = radius * Math.cos(i * angle);
-        var y1 = radius * Math.sin(i * angle);
-        var x2 = radius * Math.cos((i + 1) * angle);
-        var y2 = radius * Math.sin((i + 1) * angle);
+        var x1 = radius * Math.cos(i * angle) + xOffset;
+        var y1 = radius * Math.sin(i * angle) + zOffset;
+        var x2 = radius * Math.cos((i + 1) * angle) + xOffset;
+        var y2 = radius * Math.sin((i + 1) * angle) + zOffset;
 
         // Top face, now at y = height (above the base)
-        pointsArray.push(vec4(0, height, 0, 1.0));  // Center of top face
-        pointsArray.push(vec4(x1, height, y1, 1.0));  // Edge of top face
-        pointsArray.push(vec4(x2, height, y2, 1.0));  // Edge of top face
+        pointsArray.push(vec4(xOffset, height + yOffset, zOffset, 1.0));  // Center of top face
+        pointsArray.push(vec4(x1, height + yOffset, y1, 1.0));  // Edge of top face
+        pointsArray.push(vec4(x2, height + yOffset, y2, 1.0));  // Edge of top face
     }
 
     // Create the bottom of the cylinder (this stays at y = 0, the base)
     for (var i = 0; i < numSlices; i++) {
-        var x1 = radius * Math.cos(i * angle);
-        var y1 = radius * Math.sin(i * angle);
-        var x2 = radius * Math.cos((i + 1) * angle);
-        var y2 = radius * Math.sin((i + 1) * angle);
+        var x1 = radius * Math.cos(i * angle) + xOffset;
+        var y1 = radius * Math.sin(i * angle) + zOffset;
+        var x2 = radius * Math.cos((i + 1) * angle) + xOffset;
+        var y2 = radius * Math.sin((i + 1) * angle) + zOffset;
 
         // Bottom face, now at y = 0 (fixed base)
-        pointsArray.push(vec4(0, 0, 0, 1.0));  // Center of bottom face
-        pointsArray.push(vec4(x1, 0, y1, 1.0));  // Edge of bottom face
-        pointsArray.push(vec4(x2, 0, y2, 1.0));  // Edge of bottom face
+        pointsArray.push(vec4(xOffset, yOffset, zOffset, 1.0));  // Center of bottom face
+        pointsArray.push(vec4(x1, yOffset, y1, 1.0));  // Edge of bottom face
+        pointsArray.push(vec4(x2, yOffset, y2, 1.0));  // Edge of bottom face
     }
 
     // Create the sides of the cylinder
     for (var i = 0; i < numSlices; i++) {
-        var x1 = radius * Math.cos(i * angle);
-        var y1 = radius * Math.sin(i * angle);
-        var x2 = radius * Math.cos((i + 1) * angle);
-        var y2 = radius * Math.sin((i + 1) * angle);
+        var x1 = radius * Math.cos(i * angle) + xOffset;
+        var y1 = radius * Math.sin(i * angle) + zOffset;
+        var x2 = radius * Math.cos((i + 1) * angle) + xOffset;
+        var y2 = radius * Math.sin((i + 1) * angle) + zOffset;
 
         // Side faces, going from bottom (y = 0) to top (y = height)
-        pointsArray.push(vec4(x1, 0, y1, 1.0));  // Bottom edge
-        pointsArray.push(vec4(x1, height, y1, 1.0));  // Top edge
-        pointsArray.push(vec4(x2, height, y2, 1.0));  // Top edge
+        pointsArray.push(vec4(x1, yOffset, y1, 1.0));  // Bottom edge
+        pointsArray.push(vec4(x1, height + yOffset, y1, 1.0));  // Top edge
+        pointsArray.push(vec4(x2, height + yOffset, y2, 1.0));  // Top edge
 
-        pointsArray.push(vec4(x1, 0, y1, 1.0));  // Bottom edge
-        pointsArray.push(vec4(x2, height, y2, 1.0));  // Top edge
-        pointsArray.push(vec4(x2, 0, y2, 1.0));  // Bottom edge
+        pointsArray.push(vec4(x1, yOffset, y1, 1.0));  // Bottom edge
+        pointsArray.push(vec4(x2, height + yOffset, y2, 1.0));  // Top edge
+        pointsArray.push(vec4(x2, yOffset, y2, 1.0));  // Bottom edge
     }
 }
 

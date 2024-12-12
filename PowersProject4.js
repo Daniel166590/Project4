@@ -85,7 +85,8 @@ var colors = [
     vec4(0.3, 0.3, 0.3, 1.0), // Light-Dark Gray 7
     vec4(0.2, 0.2, 0.2, 1.0), // Dark Gray 8
     vec4(0.15, 0.4, 0.15, 1.0), // Dark Green 9
-    vec4(0.2, 0.2, 0.2, 1.0) // Black 10
+    vec4(0.2, 0.2, 0.2, 1.0), // Black 10
+    vec4(0.2, 0.02, 0.02, 1.0) // Dark Red 11
 ];
 
 // no need to change after this point
@@ -266,7 +267,7 @@ function render() {
     let wall_s = scale4(2, 2, 2);
 
     modelViewMatrix = mult(mult(mult(modelViewMatrix, wall_t), wall_r), wall_s);
-    RenderWall(10, 15, 0.65, 0.35, 3, 0, 0, 0.3); // #rows, #cols, brickWidth, brickHeight, xPosition, yPosition, zPosition, scale
+    RenderWall(10, 26, 0.65, 0.35, 3, 0, 0, 0.3); // #rows, #cols, brickWidth, brickHeight, xPosition, yPosition, zPosition, scale
     modelViewMatrix = modelViewStack.pop(); // restore 2
 
     // translating and rendering light post
@@ -296,14 +297,15 @@ function render() {
     modelViewMatrix = mult(mult(mult(modelViewMatrix, trash_t), trash_r), trash_s);
 
     RenderTrashCan();
+    RenderBench();
+    RenderFireHydrant();
     modelViewMatrix = modelViewStack.pop(); // restore 2
-
     modelViewMatrix = modelViewStack.pop(); // restore 1
 
     //requestAnimationFrame(render);
 
     // Debugging
-    // console.log("Points: " + pointsArray.length + "\nColors: " + colorsArray.length + "\nCurrent Index: " + currentIndex + '\n');
+     console.log("Points: " + pointsArray.length + "\nCurrent Index: " + currentIndex + '\n');
     // console.log("Animation Toggle: " + lampColorToggled + '\n');
     currentIndex = 0; // Reset the current index for the next frame
 }

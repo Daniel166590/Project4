@@ -408,9 +408,121 @@ function RenderTrashCan() {
     
     modelViewMatrix = modelViewStack.pop(); // restore
 
+    materialDiffuse = colors[10];
+    SetupLightingMaterial();
+
     gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(modelViewMatrix));
     gl.drawArrays(gl.TRIANGLES, currentIndex, 36);
     currentIndex += 36;
 
     modelViewMatrix = modelViewStack.pop(); // restore
 }
+
+function RenderBench() {
+    let translation = translate(0, 1.5, -6.5);
+    let scale = scale4(2, 2, 1.5);
+
+    modelViewStack.push(modelViewMatrix); // save
+    modelViewMatrix = mult(mult(modelViewMatrix, translation), scale);
+
+    // Pass the transformation matrix to the shader
+    materialDiffuse = colors[0];
+    SetupLightingMaterial();
+
+    // Draw seat
+    gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(modelViewMatrix));
+    gl.drawArrays(gl.TRIANGLES, currentIndex, 36); // seat
+    currentIndex += 36;
+
+    materialDiffuse = colors[10];
+    SetupLightingMaterial();
+
+    // Draw Legs
+    gl.drawArrays(gl.TRIANGLES, currentIndex, 72); // 2 legs 
+    currentIndex += 72;
+
+    // Draw Arm
+    // Right Arm
+    gl.drawArrays(gl.TRIANGLES, currentIndex, 1200); // curve
+    currentIndex += 1200;
+
+    gl.drawArrays(gl.TRIANGLES, currentIndex, 36); // arm
+    currentIndex += 36;
+
+    // Left Arm
+    gl.drawArrays(gl.TRIANGLES, currentIndex, 1200); // curve
+    currentIndex += 1200;
+    
+    gl.drawArrays(gl.TRIANGLES, currentIndex, 36); // arm
+    currentIndex += 36;
+
+    materialDiffuse = colors[0];
+    SetupLightingMaterial();
+
+    // Back
+    gl.drawArrays(gl.TRIANGLES, currentIndex, 36); // back
+    currentIndex += 36;
+
+    modelViewMatrix = modelViewStack.pop(); // restore
+}
+
+function RenderFireHydrant() {
+    let translation = translate(6, 0.25, 15);
+    let scale = scale4(1, 1, 1);
+
+    // Save the current modelViewMatrix state
+    modelViewStack.push(modelViewMatrix);
+    modelViewMatrix = mult(mult(modelViewMatrix, translation), scale);
+
+    // Draw the cylinder base
+    materialDiffuse = colors[0];
+    SetupLightingMaterial();
+    gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(modelViewMatrix));
+    gl.drawArrays(gl.TRIANGLES, currentIndex, 600);
+    currentIndex += 600;
+
+    // Draw the top rim
+    materialDiffuse = colors[11];
+    SetupLightingMaterial();
+    gl.drawArrays(gl.TRIANGLES, currentIndex, 1200);
+    currentIndex += 1200;
+
+    // Draw the sphere top
+    materialDiffuse = colors[0];
+    SetupLightingMaterial();
+    gl.drawArrays(gl.TRIANGLES, currentIndex, 3750);
+    currentIndex += 3750;
+
+    // Draw the tip
+    materialDiffuse = colors[11];
+    SetupLightingMaterial();
+    gl.drawArrays(gl.TRIANGLES, currentIndex, 1200);
+    currentIndex += 1200;
+
+    // Draw the flared base
+    materialDiffuse = colors[11];
+    SetupLightingMaterial();
+    gl.drawArrays(gl.TRIANGLES, currentIndex, 1200);
+    currentIndex += 1200;
+
+    // Apply rotation to the nozzle
+    modelViewStack.push(modelViewMatrix); // Save the current state before rotation
+    modelViewMatrix = mult(modelViewMatrix, translate(0.85, 1.25, 0)); // Translate the nozzle to the top of the fire hydrant
+    modelViewMatrix = mult(modelViewMatrix, rotate(90, vec3(0, 0, 1))); // Rotate the nozzle by 90 degrees on the Z-axis
+
+    // Draw the nozzle
+    materialDiffuse = colors[11];
+    SetupLightingMaterial();
+    gl.uniformMatrix4fv(modelViewMatrixLoc, false, flatten(modelViewMatrix));
+    gl.drawArrays(gl.TRIANGLES, currentIndex, 1200);
+    currentIndex += 1200;
+
+    gl.drawArrays(gl.TRIANGLES, currentIndex, 1200);
+    currentIndex += 1200;
+
+    modelViewMatrix = modelViewStack.pop(); // Restore the state after drawing the nozzle
+
+    // Restore the base matrix
+    modelViewMatrix = modelViewStack.pop();
+}
+
