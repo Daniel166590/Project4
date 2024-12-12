@@ -8,7 +8,8 @@
 //   Sounds to add: Flickering for the light and/or a car noise
 //   Add ability to reset the camera with "b"
 
-var canvas, gl, image, program;
+var gl;
+var canvas, image, program;
 var eye, near = -30, far = 30;
 
 var left = -2.0;
@@ -24,6 +25,8 @@ const up = vec3(0.0, 1.0, 0.0);
 
 var modelView, projection, viewerPos;
 var flag = true;
+
+var sounds = [], play_audio = false;
 
 var lightPosition = vec4(-2, -3, 1, 1);
 
@@ -43,18 +46,33 @@ var pointsArray = [];
 var colorsArray = [];
 var normalsArray = [];
 var texCoord = [];
-textureCube(); // for wall brick
-textureCube(); // for wall greenery
-textureCube(); // for lamp post base
-textureNothing(7386); // skip lamp post
-textureCube(); // for vending machine
-textureNothing(63+249); // skip car
-textureNothing(138); // skip cone
-textureCube(); // sidewalk
-textureCube(); // road
+AddTexPoints();
 
+var wall_t = translate(-4, 0, 15),
+wall_r = rotate(90, 0, 1, 0),
+wall_s = scale4(2, 2, 2)
 
-var car_pos = [7, 0.5, 5];
+var lamp_t = translate(4, 0.5, -6),
+lamp_r = rotate(180, 0, 1, 0),
+lamp_s = scale4(1.5, 1.5, 1.5);
+
+var trash_t = translate(-2, 0, -3),
+trash_r = translate(0, 0, 1, 0),
+trash_s = scale4(1, 1, 1);
+
+var vm_t = [-3, 0, 2],
+vm_r = [0, 0, 1, 0],
+vm_s = [4, 4, 4];
+
+var car_t = [7, 0.5, -10],
+car_r = [90, 0, 1, 0],
+car_s = [5, 5, 5];
+
+var cone_t = [10, 0, 20],
+cone_r = [0, 0, 1, 0],
+cone_s = [2, 2, 2];
+
+var WALL_POINTS = 36+36, LAMP_POINTS = 36 + 1200 + 3750 + 36 + 2400;
 
 var currentIndex = 0; // Used to track objects in the points and colors arrays
 
@@ -93,7 +111,7 @@ var colors = [
 var AllInfo = {
 
     // Camera pan control variables.
-    zoomFactor : 4,
+    zoomFactor : 10,
     translateX : 0,
     translateY : 0,
 
@@ -124,6 +142,10 @@ window.onload = function init() {
     gl.useProgram( program );
 
     Draw();
+    sounds[0] = new Audio("sounds/untitled.wav");
+    sounds[1] = new Audio("sounds/car_sounds.wav");
+    sounds[2] = new Audio("sounds/car_horn.wav");
+    sounds[0].volume = .15;
 
     var vBuffer = gl.createBuffer();
     gl.bindBuffer( gl.ARRAY_BUFFER, vBuffer);
@@ -204,34 +226,28 @@ window.onload = function init() {
                 lampColorToggled = false;  // Reset the state
             } else {
                 lampColorToggled = true;  // Set state to true to avoid multiple calls
+                car_t = [7, 0.5, -10];
+                car_r = [90, 0, 1, 0];
             }
         }
-
-        // change the lightPosition values
-        if (event.key === 'q') // ++X
-            lightPosition[0]++;
-        if (event.key === 'e') // --X
-            lightPosition[0]--;
-        if (event.key === 'w') // ++Y
-            lightPosition[1]++;
-        if (event.key === 'x') // --Y
-            lightPosition[1]--;
-        if (event.key === 'a') // ++Z
-            lightPosition[2]++;
-        if (event.key === 'd') // --Z
-            lightPosition[2]--;
-
-        if(event.key === 'm')
-            car_pos[0]++;
-        if(event.key === 'n')
-            car_pos[0]--;
-        console.log(lightPosition, car_pos)
-        
+        if (event.key === 'b' || event.key === 'B'){
+            AllInfo.zoomFactor = 10;
+            AllInfo.translateX = 0;
+            AllInfo.translateY = 0;
+            AllInfo.phi = 1;
+            AllInfo.theta = 0.5;
+            AllInfo.radius = 1;
+            lampColorToggled = false;
+            car_t = [7, 0.5, -10];
+            car_r = [90, 0, 1, 0];
+        }
     });
 
 
     render();
 }
+
+
 
 function render() {
     gl.clearColor(0.05, 0.05, 0.05, 1.0);
@@ -260,50 +276,53 @@ function render() {
     
     // RENDERING OBJECTS
     modelViewStack.push(modelViewMatrix); // save 1
-    modelViewStack.push(modelViewMatrix); // save 2
-    
-    let wall_t = translate(-4, 0, 15);
-    let wall_r = rotate(90, 0, 1, 0);
-    let wall_s = scale4(2, 2, 2);
 
+    modelViewStack.push(modelViewMatrix); // save 2
     modelViewMatrix = mult(mult(mult(modelViewMatrix, wall_t), wall_r), wall_s);
     RenderWall(10, 26, 0.65, 0.35, 3, 0, 0, 0.3); // #rows, #cols, brickWidth, brickHeight, xPosition, yPosition, zPosition, scale
     modelViewMatrix = modelViewStack.pop(); // restore 2
 
     // translating and rendering light post
     modelViewStack.push(); // save 2
-
-    let lamp_t = translate(4, 0.5, -6);
-    lamp_r = rotate(180, 0, 1, 0);
-    let lamp_s = scale4(1.5, 1.5, 1.5);
-    
     modelViewMatrix = mult(mult(mult(modelViewMatrix, lamp_t), lamp_r), lamp_s);
     RenderLightPost(lampCurrentColor);
-
     modelViewMatrix = modelViewStack.pop(); // restore 2
 
-    drawVendingMachine([-3, 0, 2], [0, 0, 1, 0], [4, 4, 4]); // translate, rotate, scale
-    drawCar(car_pos, [90, 0, 1, 0], [5, 5, 5]); // translate, rotate, scale
-    drawSurfaceRevolution([10, 0, 16], [0, 0, 1, 0], [2, 2, 2]); // translate, rotate, scale
+    drawVendingMachine(vm_t, vm_r, vm_s); // translate, rotate, scale
+    drawCar(car_t, car_r, car_s); // translate, rotate, scale
+    drawSurfaceRevolution(cone_t, cone_r, cone_s); // translate, rotate, scale
     
     // draw road
     RenderRoad();
 
     // draw trash can
     modelViewStack.push(modelViewMatrix); // save 2
-    let trash_t = translate(-2, 0, -3);
-    let trash_r = translate(0, 0, 1, 0);
-    let trash_s = scale4(1, 1, 1);
     modelViewMatrix = mult(mult(mult(modelViewMatrix, trash_t), trash_r), trash_s);
-
     RenderTrashCan();
     RenderBench();
     RenderFireHydrant();
     modelViewMatrix = modelViewStack.pop(); // restore 2
     modelViewMatrix = modelViewStack.pop(); // restore 1
 
-    //requestAnimationFrame(render);
-
+    // requestAnimationFrame(render);
+    if (lampColorToggled) {
+        if (car_t[2] < 10) {
+            car_t[2] += .2;
+            sounds[0].play();
+            sounds[1].play();
+        } else {
+            if (car_r[0] < 180)
+                car_r[0] += 5;
+            else {
+                car_t[0] += .2;
+            }
+        }
+        } else {
+        sounds[1].pause();
+        sounds[0].pause();
+        sounds[1].load();
+        sounds[0].load();
+    }
     // Debugging
      console.log("Points: " + pointsArray.length + "\nCurrent Index: " + currentIndex + '\n');
     // console.log("Animation Toggle: " + lampColorToggled + '\n');
